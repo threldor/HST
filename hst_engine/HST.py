@@ -22,9 +22,13 @@ class HST(object):
 
         self.HSTMaster = None
 
-        self.HSTHeaders = []
+        self.HSTDataitems = []
 
         self.filename = None
+
+        self.drive = None
+
+        self.repath = None
 
         if filename is not None:
 
@@ -35,13 +39,19 @@ class HST(object):
 
         self.filename = filename
 
-        self.HSTMaster = HSTMaster(self.filename)
+        self.HSTMaster = HSTMaster(self, self.filename)
 
-        self.HSTHeaders = [HSTData(data) for data in self.HSTMaster.data]
+        self.HSTDataitems = [HSTData(self.HSTMaster, data) for data in self.HSTMaster.data]
 
 
 if __name__ == '__main__':
 
-    inputFile = Path('../resources/')
+    inputFile = Path('../resources/ST051DOS01FIT0780201acHi.HST')
 
     hst = HST()
+
+    hst.drive = 'C'
+
+    hst.repath = Path(r'C:\Users\jaun.vanheerden\PycharmProjects\HST\resources\converted')
+
+    hst.load(inputFile)

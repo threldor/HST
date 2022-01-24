@@ -14,27 +14,58 @@ __status__ = "Production"
 from formats import header_HST
 from pathlib import Path
 import numpy as np
-from hst_engine import HSTMaster
+from HSTMaster import HSTMaster
 from utils.str_conversion import bytes_to_str
 from pprint import pprint
+import os
 
 
 class HSTData(object):
 
-    def __init__(self, master: HSTMaster, data: np.void) -> None:
+    def __init__(self,
+                 master: HSTMaster,
+                 data: np.void) -> None:
 
         self.master = master
 
         self.dt_header = header_HST(master['version'])
 
-        self.filename = bytes_to_str(master['filename'])
+        self.filename = Path(bytes_to_str(data['name']))
+
+        self._header_raw = None
+
+        self.header = None
+
+
+        self.load()
+
+
+    def load(self):
 
         # read the HST and push to dict
-        self._header_raw = np.fromfile(self.filename, dtype=self.dt_header, count=1)[0]
+        try:
+            
+            _filename = self.filename
+            
+            if self.master.parent.drive is not None:
 
-        self.header = dict(zip(self._header_raw.dtype.names, self._header_raw))
+                _filename = Path(f"{self.master.parent.drive}:{os.path.splitdrive(_filename)[-1]}")
 
-        pprint(self.header)
+            if self.master.parent.repath is not None:
+
+                _filename = self.master.parent.repath / _filename.name
+
+            self._header_raw = np.fromfile(_filename, dtype=self.dt_header, count=1)[0]
+
+        except FileNotFoundError as e:
+
+            print(e)
+
+        if self._header_raw is not None:
+
+            self.header = dict(zip(self._header_raw.dtype.names, self._header_raw))
+
+            pprint(self.header)
 
 
 

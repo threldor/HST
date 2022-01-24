@@ -14,17 +14,19 @@ from formats import MASTER_H, header_HST
 from pprint import pprint
 from pathlib import Path
 import numpy as np
-
-from utils.str_conversion import byte_to_str
+# from HST import HST
 
 
 class HSTMaster(object):
 
-    def __init__(self, filename: Path):
+    def __init__(self, parent, filename: Path) -> None:
         """
 
         :type filename: Path
         """
+
+        self.parent = parent
+
         self.dt_header = np.dtype(MASTER_H)
 
         # read the HST and push to dict
@@ -34,10 +36,11 @@ class HSTMaster(object):
 
         self.dt_data = np.dtype(header_HST(self.header['version']))
 
-        self.data = np.fromfile(inputFile,
+        self.data = np.fromfile(filename,
                                 dtype=self.dt_data,
                                 count=self.header['nFiles'],
                                 offset=self.dt_header.itemsize)
+
 
         pprint(self.data)
         print('----')
@@ -52,6 +55,23 @@ class HSTMaster(object):
     def __len__(self):
         return len(self.data)
 
+    def __getitem__(self, key):
+        return self.header[key]
+
+    # def __setitem__(self, key, value):
+    #     if key in self.header:
+    #         raise ValueError(f'{key} Already Exists - These values should be unique.')
+    #     self.header[key] = value
+
+    # def __contains__(self, item):
+    #     return item in self.header
+
+    # def __iter__(self):
+    #     return iter(self.header.values())
+
+    # def __delitem__(self, item):
+    #     del self.header[item]
+
     # def __repr__(self):
     #     return pprint(self.data)
     #
@@ -60,6 +80,8 @@ class HSTMaster(object):
 
 
 if __name__ == '__main__':
+
     inputFile = Path("../resources/converted/ST051DOS01FIT0780201acHi.HST")
 
     hst_master = HSTMaster(inputFile)
+
