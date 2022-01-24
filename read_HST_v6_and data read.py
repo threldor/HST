@@ -34,7 +34,7 @@ def HST_Sample_to_datetime(samplePeriod):
     return datetime.timedelta(milliseconds=int(samplePeriod))
 
 
-inputFile = "converted/ST051DOS01FIT0780201acHi.HST"
+inputFile = "resources/ST051DOS01FIT0780201acHi.HST"
 
 
 # inputFile = "converted/8-Byte Trends/ST051DOS01FIT0780201acHi.HST"
@@ -370,7 +370,7 @@ print(dataFile)
 ospath = f[0]['name'].decode('ASCII').strip().strip('\x00').replace('\\', '/')
 print(ospath)
 
-ospath = ospath.replace('D:/CitectSCADA/Data/ST051/TREND/', 'converted/')
+ospath = ospath.replace('D:/CitectSCADA/Data/ST051/TREND/', 'resources/converted/')
 
 # opath=os.path.join(*ospath)
 # print(opath)

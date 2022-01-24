@@ -34,12 +34,15 @@ class HSTMaster(object):
 
         self.dt_data = np.dtype(header_HST(self.header['version']))
 
-        self.data = [Path(byte_to_str(data[0])) for data in np.fromfile(inputFile,
-                                                                        dtype=self.dt_data,
-                                                                        count=self.header['nFiles'],
-                                                                        offset=self.dt_header.itemsize)]
+        self.data = np.fromfile(inputFile,
+                                dtype=self.dt_data,
+                                count=self.header['nFiles'],
+                                offset=self.dt_header.itemsize)
 
         pprint(self.data)
+        print('----')
+        print(self.data[0])
+        print(type(self.data[0]))
 
         # # pprint(self.data)
         # HSTHdt = np.dtype(HSTHeader(version))

@@ -15,7 +15,7 @@ from formats import *
 
 class DataHeader(object):
 
-    def __init__(self):
+    def __init__(self, data: numpy) -> None:
         pass
 
 

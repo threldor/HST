@@ -18,7 +18,7 @@ from pathlib import Path
 
 class HST(object):
 
-    def __init__(self, filename: Path = None):
+    def __init__(self, filename: Path = None) -> None:
 
         self.HSTMaster = None
 
@@ -30,14 +30,16 @@ class HST(object):
 
             self.load(filename)
 
-    def load(self, filename: Path):
+
+    def load(self, filename: Path) -> None:
 
         self.filename = filename
 
         self.HSTMaster = HSTMaster(self.filename)
 
-        self.HSTHeaders = [HSTHeader(file) for file in self.HSTMaster.data]
+        self.HSTHeaders = [HSTHeader(data) for data in self.HSTMaster.data]
 
 
 if __name__ == '__main__':
+
     hst = HST()

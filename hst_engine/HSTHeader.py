@@ -11,13 +11,19 @@ __status__ = "Production"
 
 # imports
 from formats import *
+from pathlib import Path
+import numpy as np
 
 
 class HSTHeader(object):
 
-    def __init__(self):
-        pass
+    def __init__(self, data: np.void = None) -> None:
+
+
+        if data is not None:
+            pass
 
 
 if __name__ == '__main__':
+
     hst_header = HSTHeader()
