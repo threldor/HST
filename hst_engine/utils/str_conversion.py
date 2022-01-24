@@ -13,7 +13,7 @@ __status__ = "Production"
 # imports
 
 
-def byte_to_str(bytes_input: bytes, encoding: str = 'ASCII') -> str:
+def bytes_to_str(bytes_input: bytes, encoding: str = 'ASCII') -> str:
     """x
     :param encoding:
     :type bytes_input: bytes
@@ -22,6 +22,6 @@ def byte_to_str(bytes_input: bytes, encoding: str = 'ASCII') -> str:
 
 
 if __name__ == '__main__':
-    print(byte_to_str(b'this is a \x03 byte'))
+    print(bytes_to_str(b'this is a \x03 byte'))
 
     pass

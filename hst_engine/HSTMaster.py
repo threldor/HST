@@ -28,9 +28,9 @@ class HSTMaster(object):
         self.dt_header = np.dtype(MASTER_H)
 
         # read the HST and push to dict
-        self._data_raw = np.fromfile(filename, dtype=self.dt_header, count=1)[0]
+        self._header_raw = np.fromfile(filename, dtype=self.dt_header, count=1)[0]
 
-        self.header = dict(zip(self._data_raw.dtype.names, self._data_raw))
+        self.header = dict(zip(self._header_raw.dtype.names, self._header_raw))
 
         self.dt_data = np.dtype(header_HST(self.header['version']))
 
@@ -45,7 +45,7 @@ class HSTMaster(object):
         print(type(self.data[0]))
 
         # # pprint(self.data)
-        # HSTHdt = np.dtype(HSTHeader(version))
+        # HSTHdt = np.dtype(HSTData(version))
         # # read the HST data array and push to dict, offset by master header
         # f = np.fromfile(inputFile, dtype=HSTHdt, count=nFiles, offset=HSTMdt.itemsize)
 

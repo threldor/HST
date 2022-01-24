@@ -12,7 +12,7 @@ __status__ = "Production"
 # imports
 from formats import *
 from HSTMaster import HSTMaster
-from HSTHeader import HSTHeader
+from HSTData import HSTData
 from pathlib import Path
 
 
@@ -37,9 +37,11 @@ class HST(object):
 
         self.HSTMaster = HSTMaster(self.filename)
 
-        self.HSTHeaders = [HSTHeader(data) for data in self.HSTMaster.data]
+        self.HSTHeaders = [HSTData(data) for data in self.HSTMaster.data]
 
 
 if __name__ == '__main__':
+
+    inputFile = Path('../resources/')
 
     hst = HST()
