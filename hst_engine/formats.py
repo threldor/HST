@@ -262,7 +262,7 @@ def header_data(v):
     return switcher.get(v, None)
 
 
-def DataData(v):
+def data_format(v):
     """x"""
 
     Data2 = [('value', np.int16)]

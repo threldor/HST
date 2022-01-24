@@ -14,7 +14,6 @@ from formats import MASTER_H, header_HST
 from pprint import pprint
 from pathlib import Path
 import numpy as np
-# from HST import HST
 
 
 class HSTMaster(object):
@@ -41,42 +40,12 @@ class HSTMaster(object):
                                 count=self.header['nFiles'],
                                 offset=self.dt_header.itemsize)
 
-
-        pprint(self.data)
-        print('----')
-        print(self.data[0])
-        print(type(self.data[0]))
-
-        # # pprint(self.data)
-        # HSTHdt = np.dtype(HSTData(version))
-        # # read the HST data array and push to dict, offset by master header
-        # f = np.fromfile(inputFile, dtype=HSTHdt, count=nFiles, offset=HSTMdt.itemsize)
-
     def __len__(self):
         return len(self.data)
 
     def __getitem__(self, key):
         return self.header[key]
 
-    # def __setitem__(self, key, value):
-    #     if key in self.header:
-    #         raise ValueError(f'{key} Already Exists - These values should be unique.')
-    #     self.header[key] = value
-
-    # def __contains__(self, item):
-    #     return item in self.header
-
-    # def __iter__(self):
-    #     return iter(self.header.values())
-
-    # def __delitem__(self, item):
-    #     del self.header[item]
-
-    # def __repr__(self):
-    #     return pprint(self.data)
-    #
-    # def __str__(self):
-    #     return self.name
 
 
 if __name__ == '__main__':
