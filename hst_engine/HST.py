@@ -13,18 +13,31 @@ __status__ = "Production"
 from formats import *
 from HSTMaster import HSTMaster
 from HSTHeader import HSTHeader
+from pathlib import Path
+
 
 class HST(object):
 
-    def __init__(self):
-        pass
+    def __init__(self, filename: Path = None):
 
-        self.HSTMaster =  # HSTMaster()
+        self.HSTMaster = None
 
-        self.HSTHeaders = [] #
+        self.HSTHeaders = []
 
+        self.filename = None
+
+        if filename is not None:
+
+            self.load(filename)
+
+    def load(self, filename: Path):
+
+        self.filename = filename
+
+        self.HSTMaster = HSTMaster(self.filename)
+
+        self.HSTHeaders = [HSTHeader(file) for file in self.HSTMaster.data]
 
 
 if __name__ == '__main__':
-
     hst = HST()
