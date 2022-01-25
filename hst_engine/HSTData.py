@@ -4,6 +4,7 @@ Example:
     $ python hst_engine.py
 """
 
+
 # imports
 from formats import header_data, data_format
 from pathlib import Path
@@ -17,14 +18,15 @@ from typing import Union
 from numpy.core.multiarray import ndarray
 from numpy.typing import _64Bit
 
+
 __author__ = __maintainer__ = ["Jaun van Heerden"]
 __version__ = "1.0.0"
 __email__ = ["jaun.vanheerden@allianceautomation.com.au"]
 __status__ = "Production"
 
 
-
 class HSTData(object):
+
 
     def __init__(self,
                  master: HSTMaster,
@@ -48,41 +50,52 @@ class HSTData(object):
 
 
     def __getitem__(self, subscript):
+
         if isinstance(subscript, slice):
             # do your handling for a slice object:
 
-            print(subscript.start, subscript.stop, subscript.step)
             # ignore step
 
             start_index = (self.masterItem['dataLength'] + subscript.start) % self.masterItem['dataLength']
+
             stop_index = (self.masterItem['dataLength'] + subscript.stop) % self.masterItem['dataLength']
 
             if start_index > stop_index:
+
                 _start = self.get_data(start_index, self.masterItem['dataLength'] - 1 - start_index)
+
                 _stop = self.get_data(1, stop_index)
+
                 data = np.append(_start, _stop)
+
             else:
+
                 data = self.get_data(start_index, stop_index)
+
             return data
 
         else:
+
             # Do your handling for a plain index
-            print(subscript)
 
             return np.fromfile(self.filename,
                                dtype=self.dt_data,
                                count=1,
                                offset=self.dt_header.itemsize + self.dt_data.itemsize * subscript)
 
+
     def load(self):
 
         # read the HST and push to dict
+
         try:
 
             if self.master.parent.drive is not None:
+
                 self.filename = Path(f"{self.master.parent.drive}:{os.path.splitdrive(self.filename)[-1]}")
 
             if self.master.parent.repath is not None:
+
                 self.filename = self.master.parent.repath / self.filename.name
 
             self.header = np.fromfile(self.filename, dtype=self.dt_header, count=1)[0]
@@ -104,6 +117,7 @@ class HSTData(object):
 
 
     def get_data(self, index: int, count: int) -> Union[ndarray, ndarray[Union[np.floating[_64Bit], np.float_]]]:
+
         return np.fromfile(self.filename,
                            dtype=self.dt_data,
                            count=count,
@@ -111,4 +125,5 @@ class HSTData(object):
 
 
 if __name__ == '__main__':
+
     hst_header = HSTData()

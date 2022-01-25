@@ -212,7 +212,7 @@ DATA_H_8 = [('name', '|S112'),
 
 
 # given version return data header type
-def header_HST(v):
+def header_HST(v: int) -> list:
     """x"""
 
     # version enumeration
@@ -237,7 +237,7 @@ def header_HST(v):
     return switcher.get(v, None)
 
 
-def header_data(v):
+def header_data(v: int) -> list:
     """x"""
 
     # version enumeration
@@ -262,7 +262,7 @@ def header_data(v):
     return switcher.get(v, None)
 
 
-def data_format(v):
+def data_format(v: int) -> list:
     """x"""
 
     Data2 = [('value', np.int16)]
