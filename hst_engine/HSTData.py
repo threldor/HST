@@ -13,6 +13,8 @@ from HSTMaster import HSTMaster
 from utils.str_conversion import bytes_to_str
 from pprint import pprint
 import os
+import datetime
+from static import GATED_DATA_8_HEX
 from utils.datetime_conversion import HST_Time_to_datetime, HST_Sample_to_datetime
 from typing import Union
 from numpy.core.multiarray import ndarray
@@ -39,6 +41,12 @@ class HSTData(object):
         self.dt_header = np.dtype(header_data(master['version']))
 
         self.filename = Path(bytes_to_str(self.masterItem['name']))
+        
+        self.sampleRate = datetime.timedelta(milliseconds=int(self.masterItem['samplePeriod']))
+        
+        self.span = range(int(masterItem['startTime']),
+                          int(masterItem['endTime']),
+                          int(self.sampleRate.total_seconds()))
 
         self.header = None
 
@@ -55,6 +63,17 @@ class HSTData(object):
             # do your handling for a slice object:
 
             # ignore step
+            if subscript.stop is None:
+
+                start_index = (self.masterItem['dataLength'] + subscript.start) % self.masterItem['dataLength']
+
+                return self.get_data(start_index, self.masterItem['dataLength'] - 1 - start_index)
+
+            if subscript.start is None:
+
+                stop_index = (self.masterItem['dataLength'] + subscript.stop) % self.masterItem['dataLength']
+
+                return self.get_data(0, stop_index)
 
             start_index = (self.masterItem['dataLength'] + subscript.start) % self.masterItem['dataLength']
 
@@ -70,18 +89,35 @@ class HSTData(object):
 
             else:
 
-                data = self.get_data(start_index, stop_index)
+                data = self.get_data(start_index, stop_index - start_index)
 
             return data
 
         else:
+            _index = (self.masterItem['dataLength'] + subscript) % self.masterItem['dataLength']
 
             # Do your handling for a plain index
 
-            return np.fromfile(self.filename,
-                               dtype=self.dt_data,
-                               count=1,
-                               offset=self.dt_header.itemsize + self.dt_data.itemsize * subscript)
+            return self.get_data(_index, 1)
+
+
+
+    def __setitem__(self, subscript, value):
+
+        if isinstance(subscript, slice):
+            pass
+
+
+        else:
+
+            _index = (self.masterItem['dataLength'] + subscript) % self.masterItem['dataLength']
+
+            self.set_data(_index, [value])
+
+            if isinstance(value, list):
+                print('list input')
+
+
 
 
     def load(self):
@@ -110,18 +146,37 @@ class HSTData(object):
 
             pprint(self.header)
 
-            # version = self.header['version']
-            # dataLength = self.header['dataLength']
-            # startTime = HST_Time_to_datetime(self.header['startTime'])
-            # sampleDelta = HST_Sample_to_datetime(self.header['samplePeriod'])
 
+    def get_data(self, index: int, count: int):
 
-    def get_data(self, index: int, count: int) -> Union[ndarray, ndarray[Union[np.floating[_64Bit], np.float_]]]:
-
-        return np.fromfile(self.filename,
+        data = np.fromfile(self.filename,
                            dtype=self.dt_data,
                            count=count,
                            offset=self.dt_header.itemsize + self.dt_data.itemsize * index)  # skip header
+
+        # get timestamp
+        for i in range(len(data)):
+
+            timestamp_raw = self.masterItem['startTime'] + self.sampleRate.total_seconds() * (i + index)
+
+            timestamp = datetime.datetime.utcfromtimestamp(timestamp_raw)
+
+            print(timestamp)
+
+        return data
+
+
+
+    def set_data(self, index: int, data: list):
+
+        with open(self.filename, 'r+b') as f:
+
+            f.seek(self.header.itemsize + index)
+            # f.write(val.to_bytes(2, 'little'))
+            # f.write(struct.pack("d",floatval))
+            f.write(''.join(data).encode('ascii'))
+
+            #f.write(GATED_DATA_8_HEX)
 
 
 if __name__ == '__main__':
