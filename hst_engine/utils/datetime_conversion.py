@@ -12,6 +12,7 @@ __status__ = "Production"
 # imports
 
 import datetime
+import numpy as np
 
 
 def date_from_webkit(webkit_timestamp: str) -> datetime:
@@ -30,14 +31,22 @@ def date_to_webkit(date_string: str) -> str:
 
 
 # Convert HST start/end time into dateTime
-def HST_Time_to_datetime(DATAHdata: dict, start_time: str) -> datetime:
+def HST_Time_to_datetime(startTime: np.int32) -> datetime:
+    """
+
+    :param startTime:
+    :type DATAHdata: object
+    """
+
+    print(type(startTime))
+
     # depending on 2 byte (int32) or 8 byte (int64)
-    if start_time.itemsize == 8:
+    if startTime.itemsize == 8:
         # 8 byte
-        return date_from_webkit(DATAHdata['startTime'] / 10)  # count of 100ns since 1601
+        return date_from_webkit(startTime / 10)  # count of 100ns since 1601
     else:
         # 2 byte
-        return datetime.datetime.utcfromtimestamp(DATAHdata['startTime'])  # seconds since 1970
+        return datetime.datetime.utcfromtimestamp(startTime)  # seconds since 1970
 
 
 # Convert HST sample period into dateTime
