@@ -22,3 +22,14 @@ def scale_fast(data, old_min, old_max, new_min, new_max):
 
 def scale(data, old_min, old_max, new_min, new_max):
     return scale_fast(List(data), old_min, old_max, new_min, new_max)
+
+def scale_triple(data, min_1, max_1, min_2, max_2, min_3, max_3):
+    data_new = scale(data, min_1, max_1, min_2, max_2)
+    return scale(data_new, min_2, max_2, min_3, max_3)
+
+def scale_triple_single_call(data, min_1, max_1, min_2, max_2, min_3, max_3):
+    return [((min_3 - max_3)*(d - min_1)/(min_1 - max_1)) + min_3 for d in data]
+
+if __name__ == '__main__':
+    print(scale_triple([0, 5, 20, 50], 0, 100, -100, 100, 0, 1))
+    print(scale_triple_single_call([0, 5, 20, 50], 0, 100, -100, 100, 0, 1))
