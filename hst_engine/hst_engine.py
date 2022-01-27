@@ -35,4 +35,4 @@ if __name__ == '__main__':
 
     hst.get_data(20160, 20160 * 3 + 5)
 
-    print(scale(List(list(range(0, 1000, 2))), 0, 1000, -100, 100))
+    print(scale([2, 3], 0, 1000, 0, 100))

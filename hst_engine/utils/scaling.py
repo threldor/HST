@@ -11,13 +11,14 @@ __status__ = "Production"
 
 # imports
 from numba import jit
-import random
-import timeit
 from numba.typed import List
+
 
 @jit(nopython=True)
 def scale_fast(data, old_min, old_max, new_min, new_max):
     return [((d - old_min) / (old_max - old_min)) * (new_max - new_min) + new_min for d in data]
+    #todo(jaun) add the check here for valid/gated data
+
 
 def scale(data, old_min, old_max, new_min, new_max):
-    return scale_fast(data, old_min, old_max, new_min, new_max)
+    return scale_fast(List(data), old_min, old_max, new_min, new_max)

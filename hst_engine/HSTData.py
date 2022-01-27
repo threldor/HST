@@ -13,12 +13,14 @@ from utils.str_conversion import bytes_to_str
 from pprint import pprint
 import os
 import datetime
+from utils.scaling import scale
+from functools import reduce
+
 from static import GATED_DATA_8_HEX
 from utils.datetime_conversion import HST_Time_to_datetime, HST_Sample_to_datetime
 from typing import Union
 from numpy.core.multiarray import ndarray
 from numpy.typing import _64Bit
-
 
 __author__ = __maintainer__ = ["Jaun van Heerden"]
 __version__ = "1.0.0"
@@ -162,34 +164,35 @@ class HSTData(object):
 
             # f.write(GATED_DATA_8_HEX)
 
-    def scale_data(self, index: int, count: int) -> None:
+    def scale_data(self,
+                   index: int,
+                   count: int,
+                   o_min: int,
+                   o_max: int,
+                   n_min: int,
+                   n_max: int) -> None:
 
         with open(self.filename, 'r+b') as f:
             f.seek(self.header.itemsize + index)
 
-            for _ in range(count):
-                x = f.read(2 * 10)
+            sample = f.read(2 * count)
 
-                out = [x[k:k + 2] for k in range(0, len(x), 2)]
+            data = [int.from_bytes(sample[k:k + 2], 'little') for k in range(0, len(sample), 2)]
 
-                print(out)
+            print(sample)
+            print(data)
+            print([int(val) for val in scale(data, o_min, o_max, n_min, n_max)])
+            scaled = [int(val) for val in scale(data, o_min, o_max, n_min, n_max)]
+            #print([int(val).to_bytes(2, 'little') for val in scale(data, o_min, o_max, n_min, n_max)])
+            result = [val.to_bytes(2, 'little') for val in scaled]
 
-                print(x)
-                print((int.from_bytes(x, 'little') + 1).to_bytes(2, 'little'))
+            print(result[0] + result[1])
+            print(reduce(lambda x, y: x + y, result))
 
-                # f.write((int.from_bytes(x, 'little') + 1).to_bytes(2, 'little'))
+            print()
+            f.seek(self.header.itemsize + index)
+            f.write(reduce(lambda x, y: x + y, result))
 
-
-
-
-# from numba import jit
-# import random
-# import timeit
-# from numba.typed import List
-#
-# @jit(nopython=True)
-# def scale(d_in, o_min, o_max, n_min, n_max):
-#     return [((d - o_min) / (o_max - o_min)) * (n_max - n_min) + n_min for d in d_in]
 
 
 if __name__ == '__main__':
