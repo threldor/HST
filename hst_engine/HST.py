@@ -14,7 +14,8 @@ from HSTMaster import HSTMaster
 from HSTData import HSTData
 from pathlib import Path
 import datetime
-
+from numba.typed import List
+from utils.scaling import scale
 
 class HST(object):
 
@@ -147,3 +148,5 @@ if __name__ == '__main__':
     print(hst[20161])
 
     hst.get_data(20160, 20160 * 3 + 5)
+
+    print(scale(List(list(range(0, 1000, 2))), 0, 1000, -100, 100))

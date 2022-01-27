@@ -4,7 +4,6 @@ Example:
     $ python hst_engine.py
 """
 
-
 # imports
 from formats import header_data, data_format
 from pathlib import Path
@@ -29,7 +28,6 @@ __status__ = "Production"
 
 class HSTData(object):
 
-
     def __init__(self,
                  master: HSTMaster,
                  masterItem: np.void) -> None:
@@ -41,9 +39,9 @@ class HSTData(object):
         self.dt_header = np.dtype(header_data(master['version']))
 
         self.filename = Path(bytes_to_str(self.masterItem['name']))
-        
+
         self.sampleRate = datetime.timedelta(milliseconds=int(self.masterItem['samplePeriod']))
-        
+
         self.span = range(int(masterItem['startTime']),
                           int(masterItem['endTime']),
                           int(self.sampleRate.total_seconds()))
@@ -56,7 +54,6 @@ class HSTData(object):
 
         self.load()
 
-
     def __getitem__(self, subscript):
 
         if isinstance(subscript, slice):
@@ -64,13 +61,11 @@ class HSTData(object):
 
             # ignore step
             if subscript.stop is None:
-
                 start_index = (self.masterItem['dataLength'] + subscript.start) % self.masterItem['dataLength']
 
                 return self.get_data(start_index, self.masterItem['dataLength'] - 1 - start_index)
 
             if subscript.start is None:
-
                 stop_index = (self.masterItem['dataLength'] + subscript.stop) % self.masterItem['dataLength']
 
                 return self.get_data(0, stop_index)
@@ -100,8 +95,6 @@ class HSTData(object):
 
             return self.get_data(_index, 1)
 
-
-
     def __setitem__(self, subscript, value):
 
         if isinstance(subscript, slice):
@@ -117,9 +110,6 @@ class HSTData(object):
             if isinstance(value, list):
                 print('list input')
 
-
-
-
     def load(self):
 
         # read the HST and push to dict
@@ -127,11 +117,9 @@ class HSTData(object):
         try:
 
             if self.master.parent.drive is not None:
-
                 self.filename = Path(f"{self.master.parent.drive}:{os.path.splitdrive(self.filename)[-1]}")
 
             if self.master.parent.repath is not None:
-
                 self.filename = self.master.parent.repath / self.filename.name
 
             self.header = np.fromfile(self.filename, dtype=self.dt_header, count=1)[0]
@@ -141,11 +129,9 @@ class HSTData(object):
             print(e)
 
         if self.header is not None:
-
             self.dt_data = np.dtype(data_format(self.header['version']))
 
             pprint(self.header)
-
 
     def get_data(self, index: int, count: int):
 
@@ -156,7 +142,6 @@ class HSTData(object):
 
         # get timestamp
         for i in range(len(data)):
-
             timestamp_raw = self.masterItem['startTime'] + self.sampleRate.total_seconds() * (i + index)
 
             timestamp = datetime.datetime.utcfromtimestamp(timestamp_raw)
@@ -165,20 +150,47 @@ class HSTData(object):
 
         return data
 
-
-
-    def set_data(self, index: int, data: list):
+    def set_data(self, index: int, data: list) -> None:
 
         with open(self.filename, 'r+b') as f:
-
             f.seek(self.header.itemsize + index)
             # f.write(val.to_bytes(2, 'little'))
-            # f.write(struct.pack("d",floatval))
-            f.write(''.join(data).encode('ascii'))
+            # f.write(struct.pack("d", floatval))
+            # f.write(''.join(data).encode('ascii'))
+            # f.write(data[0].to_bytes(2, 'little'))
+            f.write(bytearray(data))
 
-            #f.write(GATED_DATA_8_HEX)
+            # f.write(GATED_DATA_8_HEX)
+
+    def scale_data(self, index: int, count: int) -> None:
+
+        with open(self.filename, 'r+b') as f:
+            f.seek(self.header.itemsize + index)
+
+            for _ in range(count):
+                x = f.read(2 * 10)
+
+                out = [x[k:k + 2] for k in range(0, len(x), 2)]
+
+                print(out)
+
+                print(x)
+                print((int.from_bytes(x, 'little') + 1).to_bytes(2, 'little'))
+
+                # f.write((int.from_bytes(x, 'little') + 1).to_bytes(2, 'little'))
+
+
+
+
+# from numba import jit
+# import random
+# import timeit
+# from numba.typed import List
+#
+# @jit(nopython=True)
+# def scale(d_in, o_min, o_max, n_min, n_max):
+#     return [((d - o_min) / (o_max - o_min)) * (n_max - n_min) + n_min for d in d_in]
 
 
 if __name__ == '__main__':
-
     hst_header = HSTData()
