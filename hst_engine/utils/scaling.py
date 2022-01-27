@@ -21,10 +21,14 @@ def scale_fast(data, old_min, old_max, new_min, new_max):
 
 
 def scale(data, old_min, old_max, new_min, new_max):
-    return scale_fast(List(data), old_min, old_max, new_min, new_max)
+    if isinstance(data, list):
+        return scale_fast(List(data), old_min, old_max, new_min, new_max)
+    else:
+        return ((data - old_min) / (old_max - old_min)) * (new_max - new_min) + new_min
 
 def scale_triple(data, min_1, max_1, min_2, max_2, min_3, max_3):
     data_new = scale(data, min_1, max_1, min_2, max_2)
+    print('intermediate:', data_new)
     return scale(data_new, min_2, max_2, min_3, max_3)
 
 def scale_triple_single_call(data, min_1, max_1, min_2, max_2, min_3, max_3):

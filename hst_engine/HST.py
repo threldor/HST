@@ -16,6 +16,8 @@ from pathlib import Path
 import datetime
 from numba.typed import List
 from utils.scaling import scale
+from HSTSlice import HSTSlice
+
 
 class HST(object):
 
@@ -35,6 +37,8 @@ class HST(object):
 
         self.samplePeriod = None
 
+        self.dataLengthSegment = None
+
         self.dataLength = None
 
         if filename is not None:
@@ -44,46 +48,50 @@ class HST(object):
 
         if isinstance(subscript, slice):
             # do your handling for a slice object:
-            pass
 
-        #     # ignore step
-        #     if subscript.stop is None:
-        #
-        #         start_index = (self.masterItem['dataLength'] + subscript.start) % self.masterItem['dataLength']
-        #
-        #         return self.get_data(start_index, self.masterItem['dataLength'] - 1 - start_index)
-        #
-        #     if subscript.start is None:
-        #
-        #         stop_index = (self.masterItem['dataLength'] + subscript.stop) % self.masterItem['dataLength']
-        #
-        #         return self.get_data(0, stop_index)
-        #
-        #     start_index = (self.masterItem['dataLength'] + subscript.start) % self.masterItem['dataLength']
-        #
-        #     stop_index = (self.masterItem['dataLength'] + subscript.stop) % self.masterItem['dataLength']
-        #
-        #     if start_index > stop_index:
-        #
-        #         _start = self.get_data(start_index, self.masterItem['dataLength'] - 1 - start_index)
-        #
-        #         _stop = self.get_data(1, stop_index)
-        #
-        #         data = np.append(_start, _stop)
-        #
-        #     else:
-        #
-        #         data = self.get_data(start_index, stop_index - start_index)
+            start_index = (self.dataLength + subscript.start) % self.dataLength if subscript.start else None
+            stop_index = (self.dataLength + subscript.stop) % self.dataLength if subscript.stop else None
+
+            # ignore step
+            if subscript.stop is None:
+
+                #start_index = (self.dataLength* len(self.HSTDataitems) + subscript.start) % self.dataLength
+
+                dataItems = self.get_HSTDataItems(start_index, self.dataLength - 1 - start_index)
+
+            elif subscript.start is None:
+
+                #stop_index = (self.dataLength + subscript.stop) % self.dataLength
+
+                dataItems = self.get_HSTDataItems(0, stop_index)
+
+            elif start_index > stop_index:
+
+                _start = self.get_HSTDataItems(start_index, self.dataLength - 1 - start_index)
+
+                _stop = self.get_HSTDataItems(1, stop_index)
+
+                dataItems = _start + _stop
+
+                #return HSTSlice(self.HSTMaster, dataItems, start_index, stop_index)
+
+            else:
+
+                dataItems = self.get_HSTDataItems(start_index, stop_index - start_index)
+
+            return HSTSlice(self.HSTMaster, dataItems, start_index, stop_index)
+
         #
         #     return data
         #
-        # else:
+        else:
 
-        _index = (self.dataLength + subscript) % (self.dataLength * len(self.HSTDataitems))
+            _index = (self.dataLength + subscript) % self.dataLength
 
-        # Do your handling for a plain index
+            #Do your handling for a plain index
+            dataItems = self.get_HSTDataItems(_index)
 
-        return self.get_data(_index, 1)
+            return HSTSlice(self.HSTMaster, dataItems, _index, _index)
 
     def load(self, filename: Path) -> None:
 
@@ -96,43 +104,31 @@ class HST(object):
 
         self.samplePeriod = datetime.timedelta(milliseconds=int(self.HSTDataitems[0].masterItem['samplePeriod']))
 
-        self.dataLength = self.HSTDataitems[0].masterItem['dataLength']
+        self.dataLengthSegment = self.HSTDataitems[0].masterItem['dataLength']
+
+        self.dataLength = self.dataLengthSegment * len(self.HSTDataitems)
 
         self.span = range(self.HSTDataitems[0].masterItem['startTime'],
                           self.HSTDataitems[0].masterItem['endTime'],
                           int(self.samplePeriod.total_seconds()))
 
 
-    def get_data(self, start: int, count: int):   # todo
+    def get_HSTDataItems(self, start: int, count: int = 1):  # todo
 
         # find files
-        start_index = int(start / self.dataLength)
+        start_index = int(start / self.dataLengthSegment)
 
-        stop_index = int((start + count) / self.dataLength)
+        stop_index = int((start + count) / self.dataLengthSegment)
 
         if start_index != stop_index:
-            dataFiles = self.HSTDataitems[start_index:stop_index]
+            return self.HSTDataitems[start_index:stop_index + 1]
         else:
-            dataFiles = [self.HSTDataitems[start_index]]
+            return [self.HSTDataitems[start_index]]
 
-        if len(dataFiles) == 1:
-            print('single file')
-            first = dataFiles[0]
-            mid = []
-            last = []
-        elif len(dataFiles) == 2:
-            first, last = dataFiles
-            mid = []
-        else:
-            first, *mid, last = dataFiles
-        
-        print(first,
-              mid,
-              last)
+
 
 
 if __name__ == '__main__':
-
     inputFile = Path('../resources/ST051DOS01FIT0780201acHi.HST')
 
     hst = HST()
@@ -143,10 +139,14 @@ if __name__ == '__main__':
 
     hst.load(inputFile)
 
-    print(hst[1])
+    slice1 = hst[1]
+
+    slice1.scale(0, 500, 0, 100)
+
+    print(hst[:20161])
+    print(hst[-2:])
+    print(hst[-50: -10000])
     print(hst[20160])
     print(hst[20161])
-
-    hst.get_data(20160, 20160 * 3 + 5)
 
     print(scale(List(list(range(0, 1000, 2))), 0, 1000, -100, 100))

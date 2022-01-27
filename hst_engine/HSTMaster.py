@@ -40,6 +40,11 @@ class HSTMaster(object):
                                 count=self.header['nFiles'],
                                 offset=self.dt_header.itemsize)
 
+        # set the data segment and data length (choose first) # todo check no inconsistencies
+        self.dataLengthSegment = self.data['dataLength'][0]
+
+        self.dataLength = self.dataLengthSegment * len(self.data['dataLength'])
+
 
     def __len__(self) -> int:
 

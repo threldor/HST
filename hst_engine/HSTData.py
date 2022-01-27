@@ -44,9 +44,22 @@ class HSTData(object):
 
         self.sampleRate = datetime.timedelta(milliseconds=int(self.masterItem['samplePeriod']))
 
-        self.span = range(int(masterItem['startTime']),
-                          int(masterItem['endTime']),
-                          int(self.sampleRate.total_seconds()))
+        # self.span = range(int(masterItem['startTime']),
+        #                   int(masterItem['endTime']),
+        #                   int(self.sampleRate.total_seconds()))
+        self.spanTime = range(int(self.masterItem['startTime']),
+                              int(self.masterItem['endTime']),
+                              int(self.sampleRate.total_seconds()))
+
+        self.scaledIndex = int(scale(int(self.masterItem['endTime'] - self.masterItem['startTime']),
+                                  0,
+                                  self.masterItem['endTime'],
+                                  0,
+                                  self.master.dataLength))
+
+        self.spanIndex = range(self.scaledIndex)
+
+        #self.spanIndex = range(),
 
         self.header = None
 
@@ -152,17 +165,17 @@ class HSTData(object):
 
         return data
 
-    def set_data(self, index: int, data: list) -> None:
-
-        with open(self.filename, 'r+b') as f:
-            f.seek(self.header.itemsize + index)
-            # f.write(val.to_bytes(2, 'little'))
-            # f.write(struct.pack("d", floatval))
-            # f.write(''.join(data).encode('ascii'))
-            # f.write(data[0].to_bytes(2, 'little'))
-            f.write(bytearray(data))
-
-            # f.write(GATED_DATA_8_HEX)
+    # def set_data(self, index: int, data: list) -> None:
+    #
+    #     with open(self.filename, 'r+b') as f:
+    #         f.seek(self.header.itemsize + index)
+    #         # f.write(val.to_bytes(2, 'little'))
+    #         # f.write(struct.pack("d", floatval))
+    #         # f.write(''.join(data).encode('ascii'))
+    #         # f.write(data[0].to_bytes(2, 'little'))
+    #         f.write(bytearray(data))
+    #
+    #         # f.write(GATED_DATA_8_HEX)
 
     def scale_data(self,
                    index: int,
@@ -173,26 +186,26 @@ class HSTData(object):
                    n_max: int) -> None:
 
         with open(self.filename, 'r+b') as f:
-            f.seek(self.header.itemsize + index)
+            f.seek(self.header.itemsize + index * 2)  # todo optional times 2 or times 8 dependant bytes
 
             sample = f.read(2 * count)
 
             data = [int.from_bytes(sample[k:k + 2], 'little') for k in range(0, len(sample), 2)]
 
-            print(sample)
-            print(data)
-            print([int(val) for val in scale(data, o_min, o_max, n_min, n_max)])
+            # print(sample)
+            # print(data)
+            # print([int(val) for val in scale(data, o_min, o_max, n_min, n_max)])
+
             scaled = [int(val) for val in scale(data, o_min, o_max, n_min, n_max)]
-            #print([int(val).to_bytes(2, 'little') for val in scale(data, o_min, o_max, n_min, n_max)])
+
             result = [val.to_bytes(2, 'little') for val in scaled]
 
-            print(result[0] + result[1])
-            print(reduce(lambda x, y: x + y, result))
+            # print(reduce(lambda x, y: x + y, result))
 
-            print()
-            f.seek(self.header.itemsize + index)
+            # print()
+
+            f.seek(self.header.itemsize + index * 2)
             f.write(reduce(lambda x, y: x + y, result))
-
 
 
 if __name__ == '__main__':
