@@ -15,13 +15,14 @@ from numba.typed import List
 
 
 @jit(nopython=True)
-def scale_fast(data, old_min, old_max, new_min, new_max):
+def scale_fast(data: List, old_min: int, old_max: int, new_min: int, new_max: int):
+    """fast scaling of a list of data between two ranges"""
     return [((d - old_min) / (old_max - old_min)) * (new_max - new_min) + new_min for d in data]
     #todo(jaun) add the check here for valid/gated data
 
 
 def scale(data, old_min, old_max, new_min, new_max):
-    if isinstance(data, list):
+    if isinstance(data, list) or isinstance(data, List):
         return scale_fast(List(data), old_min, old_max, new_min, new_max)
     else:
         return ((data - old_min) / (old_max - old_min)) * (new_max - new_min) + new_min

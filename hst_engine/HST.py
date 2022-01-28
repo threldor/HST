@@ -25,7 +25,7 @@ class HST(object):
 
         self.HSTMaster = None
 
-        self.HSTDataitems = []
+        self.HSTDataItems = None
 
         self.filename = None
 
@@ -33,7 +33,7 @@ class HST(object):
 
         self.repath = None
 
-        self.span = None
+        self.spanTime = None
 
         self.samplePeriod = None
 
@@ -55,13 +55,9 @@ class HST(object):
             # ignore step
             if subscript.stop is None:
 
-                #start_index = (self.dataLength* len(self.HSTDataitems) + subscript.start) % self.dataLength
-
                 dataItems = self.get_HSTDataItems(start_index, self.dataLength - 1 - start_index)
 
             elif subscript.start is None:
-
-                #stop_index = (self.dataLength + subscript.stop) % self.dataLength
 
                 dataItems = self.get_HSTDataItems(0, stop_index)
 
@@ -73,62 +69,67 @@ class HST(object):
 
                 dataItems = _start + _stop
 
-                #return HSTSlice(self.HSTMaster, dataItems, start_index, stop_index)
-
             else:
 
                 dataItems = self.get_HSTDataItems(start_index, stop_index - start_index)
 
             return HSTSlice(self.HSTMaster, dataItems, start_index, stop_index)
 
-        #
+
         #     return data
-        #
+
         else:
 
             _index = (self.dataLength + subscript) % self.dataLength
 
-            #Do your handling for a plain index
+            # Do your handling for a plain index
             dataItems = self.get_HSTDataItems(_index)
 
             return HSTSlice(self.HSTMaster, dataItems, _index, _index)
 
     def load(self, filename: Path) -> None:
+        """load the HSTMaster item and children HSTData items"""
 
         self.filename = filename
 
         self.HSTMaster = HSTMaster(self, self.filename)
 
-        self.HSTDataitems = sorted([HSTData(self.HSTMaster, data) for data in self.HSTMaster.data],
-                                   key=lambda x: x.masterItem['startTime'])
+        # sort by `startTime`
+        # self.HSTDataItems = sorted([HSTData(self.HSTMaster, data) for data in self.HSTMaster.data],
+        #                            key=lambda x: x.masterItem['startTime'])
+        self.HSTDataItems = [HSTData(self.HSTMaster, data) for data in self.HSTMaster.data]
 
-        self.samplePeriod = datetime.timedelta(milliseconds=int(self.HSTDataitems[0].masterItem['samplePeriod']))
+        #self.samplePeriod = datetime.timedelta(milliseconds=int(self.HSTDataItems[0].masterItem['samplePeriod']))
 
-        self.dataLengthSegment = self.HSTDataitems[0].masterItem['dataLength']
+        # get the data length segement from the first HSTData item - assume all are the same #todo check this
+        self.dataLengthSegment = self.HSTDataItems[0].masterItem['dataLength']
 
-        self.dataLength = self.dataLengthSegment * len(self.HSTDataitems)
+        self.dataLength = self.dataLengthSegment * len(self.HSTDataItems)
 
-        self.span = range(self.HSTDataitems[0].masterItem['startTime'],
-                          self.HSTDataitems[0].masterItem['endTime'],
-                          int(self.samplePeriod.total_seconds()))
+        for index, HSTDataItem in enumerate(self.HSTDataItems):
+            HSTDataItem.set_index(index)
+
+
+        # self.spanTime = range(self.HSTDataItems[0].masterItem['startTime'],
+        #                       self.HSTDataItems[0].masterItem['endTime'],
+        #                       int(self.samplePeriod.total_seconds()))
 
 
     def get_HSTDataItems(self, start: int, count: int = 1):  # todo
 
         # find files
-        start_index = int(start / self.dataLengthSegment)
+        startIndex = int(start / self.dataLengthSegment)
 
-        stop_index = int((start + count) / self.dataLengthSegment)
+        stopIndex = int((start + count) / self.dataLengthSegment)
 
-        if start_index != stop_index:
-            return self.HSTDataitems[start_index:stop_index + 1]
+        if startIndex != stopIndex:
+            return self.HSTDataItems[startIndex:stopIndex + 1]
         else:
-            return [self.HSTDataitems[start_index]]
-
-
+            return [self.HSTDataItems[startIndex]]
 
 
 if __name__ == '__main__':
+
     inputFile = Path('../resources/ST051DOS01FIT0780201acHi.HST')
 
     hst = HST()
@@ -139,7 +140,7 @@ if __name__ == '__main__':
 
     hst.load(inputFile)
 
-    slice1 = hst[1]
+    slice1 = hst[10_000:20_000]
 
     slice1.scale(0, 500, 0, 100)
 

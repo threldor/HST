@@ -15,6 +15,7 @@ import os
 import datetime
 from utils.scaling import scale
 from functools import reduce
+import typing
 
 from static import GATED_DATA_8_HEX
 from utils.datetime_conversion import HST_Time_to_datetime, HST_Sample_to_datetime
@@ -42,24 +43,29 @@ class HSTData(object):
 
         self.filename = Path(bytes_to_str(self.masterItem['name']))
 
-        self.sampleRate = datetime.timedelta(milliseconds=int(self.masterItem['samplePeriod']))
+
+        # self.sampleRate = datetime.timedelta(milliseconds=int(self.masterItem['samplePeriod']))
 
         # self.span = range(int(masterItem['startTime']),
         #                   int(masterItem['endTime']),
         #                   int(self.sampleRate.total_seconds()))
-        self.spanTime = range(int(self.masterItem['startTime']),
-                              int(self.masterItem['endTime']),
-                              int(self.sampleRate.total_seconds()))
+        # self.spanTime = range(int(self.masterItem['startTime']),
+        #                       int(self.masterItem['endTime']),
+        #                       int(self.sampleRate.total_seconds()))
 
-        self.scaledIndex = int(scale(int(self.masterItem['endTime'] - self.masterItem['startTime']),
-                                  0,
-                                  self.masterItem['endTime'],
-                                  0,
-                                  self.master.dataLength))
+        # self.scaledIndex = int(scale(int(self.masterItem['endTime'] - self.masterItem['startTime']),
+        #                              0,
+        #                              self.masterItem['endTime'],
+        #                              0,
+        #                              self.master.dataLength))
 
-        self.spanIndex = range(self.scaledIndex)
+        # self.spanIndex = range(self.scaledIndex, self.scaledIndex + self.master.dataLengthSegment)
 
-        #self.spanIndex = range(),
+        # self.spanIndex = range(),
+
+        self.index: typing.Union[int, None] = None
+
+        self.span: typing.Union[range, None] = None
 
         self.header = None
 
@@ -176,6 +182,15 @@ class HSTData(object):
     #         f.write(bytearray(data))
     #
     #         # f.write(GATED_DATA_8_HEX)
+
+    def set_index(self, index: int) -> None:
+        """sets the relative index based on the order within the `HSTDataItems` list """
+        self.index = index
+
+        _spanIndex = self.index * self.master.dataLengthSegment
+
+        self.span = range(_spanIndex, _spanIndex + self.master.dataLengthSegment - 1)
+
 
     def scale_data(self,
                    index: int,
