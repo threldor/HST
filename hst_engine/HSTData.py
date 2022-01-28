@@ -12,16 +12,11 @@ from HSTMaster import HSTMaster
 from utils.str_conversion import bytes_to_str
 from pprint import pprint
 import os
-import datetime
+# import datetime
 from utils.scaling import scale
 from functools import reduce
 import typing
 
-from static import GATED_DATA_8_HEX
-from utils.datetime_conversion import HST_Time_to_datetime, HST_Sample_to_datetime
-from typing import Union
-from numpy.core.multiarray import ndarray
-from numpy.typing import _64Bit
 
 __author__ = __maintainer__ = ["Jaun van Heerden"]
 __version__ = "1.0.0"
@@ -29,6 +24,7 @@ __email__ = ["jaun.vanheerden@allianceautomation.com.au"]
 __status__ = "Production"
 
 
+# noinspection PyTypeChecker
 class HSTData(object):
 
     def __init__(self,
@@ -43,25 +39,7 @@ class HSTData(object):
 
         self.filename = Path(bytes_to_str(self.masterItem['name']))
 
-
         # self.sampleRate = datetime.timedelta(milliseconds=int(self.masterItem['samplePeriod']))
-
-        # self.span = range(int(masterItem['startTime']),
-        #                   int(masterItem['endTime']),
-        #                   int(self.sampleRate.total_seconds()))
-        # self.spanTime = range(int(self.masterItem['startTime']),
-        #                       int(self.masterItem['endTime']),
-        #                       int(self.sampleRate.total_seconds()))
-
-        # self.scaledIndex = int(scale(int(self.masterItem['endTime'] - self.masterItem['startTime']),
-        #                              0,
-        #                              self.masterItem['endTime'],
-        #                              0,
-        #                              self.master.dataLength))
-
-        # self.spanIndex = range(self.scaledIndex, self.scaledIndex + self.master.dataLengthSegment)
-
-        # self.spanIndex = range(),
 
         self.index: typing.Union[int, None] = None
 
@@ -75,6 +53,7 @@ class HSTData(object):
 
         self.load()
 
+
     def __getitem__(self, subscript):
 
         if isinstance(subscript, slice):
@@ -82,11 +61,13 @@ class HSTData(object):
 
             # ignore step
             if subscript.stop is None:
+
                 start_index = (self.masterItem['dataLength'] + subscript.start) % self.masterItem['dataLength']
 
                 return self.get_data(start_index, self.masterItem['dataLength'] - 1 - start_index)
 
             if subscript.start is None:
+
                 stop_index = (self.masterItem['dataLength'] + subscript.stop) % self.masterItem['dataLength']
 
                 return self.get_data(0, stop_index)
@@ -116,20 +97,26 @@ class HSTData(object):
 
             return self.get_data(_index, 1)
 
-    def __setitem__(self, subscript, value):
+    # def __setitem__(self, subscript, value):
+    #
+    #     if isinstance(subscript, slice):
+    #         pass
+    #
+    #     else:
+    #
+    #         _index = (self.masterItem['dataLength'] + subscript) % self.masterItem['dataLength']
+    #
+    #         self.set_data(_index, [value])
+    #
+    #         if isinstance(value, list):
+    #
+    #             print('list input')
 
-        if isinstance(subscript, slice):
-            pass
 
+    def __repr__(self):
 
-        else:
+        return self.filename.name
 
-            _index = (self.masterItem['dataLength'] + subscript) % self.masterItem['dataLength']
-
-            self.set_data(_index, [value])
-
-            if isinstance(value, list):
-                print('list input')
 
     def load(self):
 
@@ -150,9 +137,11 @@ class HSTData(object):
             print(e)
 
         if self.header is not None:
+
             self.dt_data = np.dtype(data_format(self.header['version']))
 
             pprint(self.header)
+
 
     def get_data(self, index: int, count: int):
 
@@ -162,12 +151,11 @@ class HSTData(object):
                            offset=self.dt_header.itemsize + self.dt_data.itemsize * index)  # skip header
 
         # get timestamp
-        for i in range(len(data)):
-            timestamp_raw = self.masterItem['startTime'] + self.sampleRate.total_seconds() * (i + index)
-
-            timestamp = datetime.datetime.utcfromtimestamp(timestamp_raw)
-
-            print(timestamp)
+        # for i in range(len(data)):
+        #
+        #     timestamp_raw = self.masterItem['startTime'] + self.sampleRate.total_seconds() * (i + index)
+        #
+        #     timestamp = datetime.datetime.utcfromtimestamp(timestamp_raw)
 
         return data
 
@@ -201,27 +189,22 @@ class HSTData(object):
                    n_max: int) -> None:
 
         with open(self.filename, 'r+b') as f:
+
             f.seek(self.header.itemsize + index * 2)  # todo optional times 2 or times 8 dependant bytes
 
             sample = f.read(2 * count)
 
             data = [int.from_bytes(sample[k:k + 2], 'little') for k in range(0, len(sample), 2)]
 
-            # print(sample)
-            # print(data)
-            # print([int(val) for val in scale(data, o_min, o_max, n_min, n_max)])
-
             scaled = [int(val) for val in scale(data, o_min, o_max, n_min, n_max)]
 
             result = [val.to_bytes(2, 'little') for val in scaled]
 
-            # print(reduce(lambda x, y: x + y, result))
-
-            # print()
-
             f.seek(self.header.itemsize + index * 2)
+
             f.write(reduce(lambda x, y: x + y, result))
 
 
 if __name__ == '__main__':
-    hst_header = HSTData()
+
+    pass

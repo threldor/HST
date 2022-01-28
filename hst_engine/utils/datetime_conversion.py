@@ -9,14 +9,12 @@ __version__ = "1.0.0"
 __email__ = ["jaun.vanheerden@allianceautomation.com.au"]
 __status__ = "Production"
 
-
 # imports
 import datetime
 import numpy as np
 
 
 def date_from_webkit(webkit_timestamp: str) -> datetime:
-
     epoch_start = datetime.datetime(1601, 1, 1)
 
     delta = datetime.timedelta(microseconds=int(webkit_timestamp))
@@ -25,7 +23,6 @@ def date_from_webkit(webkit_timestamp: str) -> datetime:
 
 
 def date_to_webkit(date_string: str) -> str:
-
     epoch_start = datetime.datetime(1601, 1, 1)
 
     date_ = datetime.datetime.strptime(date_string, '%Y-%m-%d %H:%M:%S')
@@ -59,8 +56,13 @@ def HST_Time_to_datetime(startTime: np.int32) -> datetime:
 
 # Convert HST sample period into dateTime
 def HST_Sample_to_datetime(sample_period: str) -> datetime:
-
     return datetime.timedelta(milliseconds=int(sample_period))
+
+
+def datetime_to_index(dt: datetime.datetime, earliest: datetime.datetime, increment: int = 1) -> int:
+    """x"""
+    # difference divided by increment
+    return int((dt - earliest).total_seconds() / increment)
 
 
 if __name__ == "__main__":

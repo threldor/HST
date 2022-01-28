@@ -16,6 +16,7 @@ __status__ = "Production"
 
 
 class HSTSlice(object):
+    """A slice..."""
 
     def __init__(self,
                  master: HSTMaster,
@@ -33,8 +34,11 @@ class HSTSlice(object):
 
 
     def scale(self, o_min: int, o_max: int, n_min: int, n_max: int) -> None:
+        """scale"""
 
         for HSTDataItem in self.HSTDataItems:
+
+            index = 0
 
             if self.start in HSTDataItem.span:
 
@@ -45,16 +49,11 @@ class HSTSlice(object):
                 else:
                     count = HSTDataItem.masterItem['dataLength'] - index
 
-
             elif self.end in HSTDataItem.span:
-
-                index = 0
 
                 count = self.end % HSTDataItem.masterItem['dataLength']
 
             else:
-
-                index = 0
 
                 count = HSTDataItem.masterItem['dataLength']
 
@@ -64,7 +63,3 @@ class HSTSlice(object):
                                    o_max,
                                    n_min,
                                    n_max)
-
-
-
-

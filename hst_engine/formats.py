@@ -216,13 +216,13 @@ def header_HST(v: int) -> list:
     """x"""
 
     # version enumeration
-    TwoByteOriginal = 0  # Before v5.00  Header2
-    TwoBytePreV500 = 1  # Before v5.00  Header2
-    TwoByteV500 = 2  # 5.00 - 5.30   Header2
-    TwoByteV531 = 3  # 5.31 - 5.50   Header2
-    TwoByteV600 = 5  # 6.00 - ?      Header2v6
-    EightByteV531 = 4  # 5.31 - 550    Header8
-    EightByteV600 = 6  # 6.00 - ?      Header8v6
+    # TwoByteOriginal = 0  # Before v5.00  Header2
+    # TwoBytePreV500 = 1  # Before v5.00  Header2
+    # TwoByteV500 = 2  # 5.00 - 5.30   Header2
+    # TwoByteV531 = 3  # 5.31 - 5.50   Header2
+    # TwoByteV600 = 5  # 6.00 - ?      Header2v6
+    # EightByteV531 = 4  # 5.31 - 550    Header8
+    # EightByteV600 = 6  # 6.00 - ?      Header8v6
 
     switcher = {
         0: HEADER_2,
@@ -241,13 +241,13 @@ def header_data(v: int) -> list:
     """x"""
 
     # version enumeration
-    TwoByteOriginal = 0  # Before v5.00  Header2
-    TwoBytePreV500 = 1  # Before v5.00  Header2
-    TwoByteV500 = 2  # 5.00 - 5.30   Header2
-    TwoByteV531 = 3  # 5.31 - 5.50   Header2
-    TwoByteV600 = 5  # 6.00 - ?      Header2v6
-    EightByteV531 = 4  # 5.31 - 550    Header8
-    EightByteV600 = 6  # 6.00 - ?      Header8v6
+    # TwoByteOriginal = 0  # Before v5.00  Header2
+    # TwoBytePreV500 = 1  # Before v5.00  Header2
+    # TwoByteV500 = 2  # 5.00 - 5.30   Header2
+    # TwoByteV531 = 3  # 5.31 - 5.50   Header2
+    # TwoByteV600 = 5  # 6.00 - ?      Header2v6
+    # EightByteV531 = 4  # 5.31 - 550    Header8
+    # EightByteV600 = 6  # 6.00 - ?      Header8v6
 
     switcher = {
         0: DATA_H_2,
@@ -270,13 +270,13 @@ def data_format(v: int) -> list:
     Data8 = [('value', np.longlong)]
 
     # version enumeration
-    TwoByteOriginal = 0  # Before v5.00  Header2
-    TwoBytePreV500 = 1  # Before v5.00  Header2
-    TwoByteV500 = 2  # 5.00 - 5.30   Header2
-    TwoByteV531 = 3  # 5.31 - 5.50   Header2
-    TwoByteV600 = 5  # 6.00 - ?      Header2v6
-    EightByteV531 = 4  # 5.31 - 550    Header8
-    EightByteV600 = 6  # 6.00 - ?      Header8v6
+    # TwoByteOriginal = 0  # Before v5.00  Header2
+    # TwoBytePreV500 = 1  # Before v5.00  Header2
+    # TwoByteV500 = 2  # 5.00 - 5.30   Header2
+    # TwoByteV531 = 3  # 5.31 - 5.50   Header2
+    # TwoByteV600 = 5  # 6.00 - ?      Header2v6
+    # EightByteV531 = 4  # 5.31 - 550    Header8
+    # EightByteV600 = 6  # 6.00 - ?      Header8v6
 
     switcher = {
         0: Data2,

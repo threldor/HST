@@ -9,11 +9,13 @@ __version__ = "1.0.0"
 __email__ = ["jaun.vanheerden@allianceautomation.com.au"]
 __status__ = "Production"
 
+import datetime
+from pathlib import Path
+
+import numpy as np
+
 # imports
 from formats import MASTER_H, header_HST
-from pprint import pprint
-from pathlib import Path
-import numpy as np
 
 
 class HSTMaster(object):
@@ -46,7 +48,9 @@ class HSTMaster(object):
 
         self.filePointerRef = np.where(self.data['startTime'] == max(self.data['startTime']))
 
-        self.filePointer = self.filePointerRef['filePointer']
+        self.filePointer = self.data[self.filePointerRef]['filePointer']
+
+        self.earliest = datetime.datetime.utcfromtimestamp(min(self.data['startTime']))
 
     def __len__(self) -> int:
         return len(self.data)
@@ -56,6 +60,7 @@ class HSTMaster(object):
 
 
 if __name__ == '__main__':
-    inputFile = Path("../resources/converted/ST051DOS01FIT0780201acHi.HST")
-
-    hst_master = HSTMaster(inputFile)
+    # inputFile = Path("../resources/converted/ST051DOS01FIT0780201acHi.HST")
+    #
+    # hst_master = HSTMaster(inputFile)
+    pass
