@@ -16,7 +16,9 @@ from numba.typed import List
 
 @jit(nopython=True)
 def scale_fast(data: List, old_min: int, old_max: int, new_min: int, new_max: int):
-    """fast scaling of a list of data between two ranges"""
+    """fast scaling of a list of data between two ranges
+    :type data: List
+    """
     return [((d - old_min) / (old_max - old_min)) * (new_max - new_min) + new_min for d in data]
     #todo(jaun) add the check here for valid/gated data
 

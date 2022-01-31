@@ -24,7 +24,10 @@ from utils.datetime_conversion import datetime_to_index
 class HST(object):
 
     def __init__(self, filename: Path = None) -> None:
+        """
 
+        :type filename: Path
+        """
         self.HSTMaster = None
 
         self.HSTDataItems = None
@@ -98,8 +101,6 @@ class HST(object):
 
         self.HSTDataItems = [HSTData(self.HSTMaster, data) for data in self.HSTMaster.data]
 
-        #self.samplePeriod = datetime.timedelta(milliseconds=int(self.HSTDataItems[0].masterItem['samplePeriod']))
-
         # get the data length segment from the first HSTData item - assume all are the same #todo check this
         self.dataLengthSegment = self.HSTDataItems[0].masterItem['dataLength']
 
@@ -110,7 +111,7 @@ class HST(object):
             HSTDataItem.set_index(index)
 
 
-    def get_HSTDataItems(self, start_index: int, count: int = 1):  # todo
+    def get_HSTDataItems(self, start_index: int, count: int = 1):
 
         # find files
         startIndex = int(start_index / self.dataLengthSegment)
@@ -157,12 +158,26 @@ if __name__ == '__main__':
     hst.repath = Path(r'C:\Users\jaun.vanheerden\PycharmProjects\HST\resources\converted')
 
     hst.load(inputFile)
+    
+    # mod header 
+    hst.HSTDataItems[10].modHeader(sEngUnits='m/s')
+    hst.HSTDataItems[10].modHeader(**{'sEngUnits': 'm/s2'})
 
-
+    hst.HSTDataItems[10].modHeader(EngZero=0)
 
     # get slice based on datetime
 
     # setup datetime
+    start = datetime.datetime(2020, 12, 12, 0, 1, 0)
+
+    end = datetime.datetime(2021, 12, 12, 0, 4, 0)
+
+    slice_dt = hst[start:end]
+
+    slice_dt.scale(0, 100, 0, 1000)
+
+
+
     start = datetime.datetime(2021, 12, 12, 0, 1, 0)
 
     end = datetime.datetime(2021, 12, 12, 0, 4, 0)

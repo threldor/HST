@@ -12,6 +12,28 @@ __status__ = "Production"
 # imports
 import numpy as np
 
+# versions
+TwoByteOriginal = 0  # Before v5.00  Header2
+TwoBytePreV500 = 1  # Before v5.00  Header2
+TwoByteV500 = 2  # 5.00 - 5.30   Header2
+TwoByteV531 = 3  # 5.31 - 5.50   Header2
+TwoByteV600 = 5  # 6.00 - ?      Header2v6
+EightByteV531 = 4  # 5.31 - 550    Header8
+EightByteV600 = 6  # 6.00 - ?      Header8v6
+
+# non-valid enumeration
+# If 8-byte Trend sample is <NA>
+# it is recorded as this LONG value instead of a valid DOUBLE
+InvalidData8 = -75058848482373
+# If 8-byte Trend sample is <GATED>
+# it is recorded as this LONG value instead of a valid DOUBLE
+GatedData8 = -93823560602966
+InvalidData8Hex = 0xbbbbffffbbbbffff
+GatedData8Hex = 0xaaaaffffaaaaffff
+InvalidData2 = -32001  # Indicates invalid sample <NA> in 2-byte Trend data 0x82ff
+GatedData2 = -32002  # Indicates gated data <GATED> in 2-byte Trend data 0x82fe
+
+
 # header formats
 
 # MASTER

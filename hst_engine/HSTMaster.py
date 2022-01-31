@@ -9,13 +9,12 @@ __version__ = "1.0.0"
 __email__ = ["jaun.vanheerden@allianceautomation.com.au"]
 __status__ = "Production"
 
-import datetime
-from pathlib import Path
-
-import numpy as np
 
 # imports
 from formats import MASTER_H, header_HST
+import datetime
+from pathlib import Path
+import numpy as np
 
 
 class HSTMaster(object):
@@ -53,9 +52,11 @@ class HSTMaster(object):
         self.earliest = datetime.datetime.utcfromtimestamp(min(self.data['startTime']))
 
     def __len__(self) -> int:
+
         return len(self.data)
 
     def __getitem__(self, key: str):
+
         return self.header[key]
 
 

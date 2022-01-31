@@ -15,6 +15,11 @@ import numpy as np
 
 
 def date_from_webkit(webkit_timestamp: str) -> datetime:
+    """x :type webkit_timestamp: str
+
+    Args:
+        webkit_timestamp (str):
+    """
     epoch_start = datetime.datetime(1601, 1, 1)
 
     delta = datetime.timedelta(microseconds=int(webkit_timestamp))
@@ -23,6 +28,11 @@ def date_from_webkit(webkit_timestamp: str) -> datetime:
 
 
 def date_to_webkit(date_string: str) -> str:
+    """x
+
+    Args:
+        date_string (str):
+    """
     epoch_start = datetime.datetime(1601, 1, 1)
 
     date_ = datetime.datetime.strptime(date_string, '%Y-%m-%d %H:%M:%S')
@@ -38,9 +48,8 @@ def date_to_webkit(date_string: str) -> str:
 # Convert HST start/end time into dateTime
 def HST_Time_to_datetime(startTime: np.int32) -> datetime:
     """
-
-    :param startTime:
-    :type DATAHdata: object
+    Args:
+        startTime (np.int32):
     """
 
     print(type(startTime))
@@ -56,11 +65,22 @@ def HST_Time_to_datetime(startTime: np.int32) -> datetime:
 
 # Convert HST sample period into dateTime
 def HST_Sample_to_datetime(sample_period: str) -> datetime:
+    """x
+
+    Args:
+        sample_period (str):
+    """
     return datetime.timedelta(milliseconds=int(sample_period))
 
 
 def datetime_to_index(dt: datetime.datetime, earliest: datetime.datetime, increment: int = 1) -> int:
-    """x"""
+    """x
+
+    Args:
+        dt (datetime.datetime):
+        earliest (datetime.datetime):
+        increment (int):
+    """
     # difference divided by increment
     return int((dt - earliest).total_seconds() / increment)
 
