@@ -176,16 +176,7 @@ if __name__ == '__main__':
 
     # get slice based on datetime
 
-    # setup datetime
-    start = datetime.datetime(2020, 12, 12, 0, 1, 0)
-
-    end = datetime.datetime(2021, 12, 12, 0, 4, 0)
-
-    slice_dt = hst[start:end]
-
-    slice_dt.scale(0, 100, 0, 1000)
-
-
+    #slice_dt.scale(0, 100, 0, 1000)
 
     start = datetime.datetime(2021, 12, 12, 0, 1, 0)
 
@@ -197,11 +188,11 @@ if __name__ == '__main__':
 
     slice_009 = hst[5221440 + 10:5221440 + 20]
 
-    slice_009.scale(0, 500, 0, 100)
+    #slice_009.scale(0, 500, 0, 100)
 
     slice1 = hst[10_000:20_000]
 
-    slice1.scale(0, 500, 0, 100)
+    #slice1.scale(0, 500, 0, 100)
 
     print(hst[:20161])
     print(hst[-2:])
