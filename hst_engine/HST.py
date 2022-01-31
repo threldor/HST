@@ -158,7 +158,16 @@ if __name__ == '__main__':
     hst.repath = Path(r'C:\Users\jaun.vanheerden\PycharmProjects\HST\resources\converted')
 
     hst.load(inputFile)
-    
+
+
+    # setup datetime
+    start = datetime.datetime(2020, 12, 12, 0, 1, 0)
+
+    end = datetime.datetime(2021, 12, 12, 0, 4, 0)
+
+    slice_dt = hst[start:end]
+
+
     # mod header 
     hst.HSTDataItems[10].modHeader(sEngUnits='m/s')
     hst.HSTDataItems[10].modHeader(**{'sEngUnits': 'm/s2'})

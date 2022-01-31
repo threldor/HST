@@ -15,7 +15,7 @@ from formats import MASTER_H, header_HST
 import datetime
 from pathlib import Path
 import numpy as np
-
+import os
 
 class HSTMaster(object):
 
@@ -27,13 +27,15 @@ class HSTMaster(object):
 
         self.parent = parent
 
+        self.filename = Path(os.path.abspath(filename))
+
         self.dt_header = np.dtype(MASTER_H)
 
-        self.header = np.fromfile(filename, dtype=self.dt_header, count=1)[0]
+        self.header = np.fromfile(self.filename, dtype=self.dt_header, count=1)[0]
 
         self.dt_data = np.dtype(header_HST(self.header['version']))
 
-        self.data = np.fromfile(filename,
+        self.data = np.fromfile(self.filename,
                                 dtype=self.dt_data,
                                 count=self.header['nFiles'],
                                 offset=self.dt_header.itemsize)

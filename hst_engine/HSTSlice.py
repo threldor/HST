@@ -4,10 +4,12 @@ Example:
     $ python hst_engine.py
 """
 
-
 # imports
 from HSTMaster import HSTMaster
 from HSTData import HSTData
+import shutil
+import os
+
 
 __author__ = __maintainer__ = ["Jaun van Heerden"]
 __version__ = "1.0.0"
@@ -22,24 +24,47 @@ class HSTSlice(object):
                  master: HSTMaster,
                  HSTDataItems: list,
                  start: int,
-                 end: int) -> None:
+                 end: int,
+                 inplace: bool = False,
+                 resultFolder: str = "result") -> None:
         """
 
+        :type inplace: bool
         :type master: HSTMaster
         """
         self.master = master
 
         self.HSTDataItems = HSTDataItems
 
+        self.inplace = inplace
+
+        self.resultFolder = resultFolder
+
+        self.resultPath = None
+
+        if not self.inplace:
+
+            # add folder if does not exist
+
+            self.resultPath = self.master.filename.parent / self.resultFolder
+
+            if not os.path.exists(self.resultPath):
+                os.mkdir(self.resultPath)
+
+            # copy to and set dir
+            for HSTDataItem in self.HSTDataItems:
+                newPath = self.resultPath / HSTDataItem.filename.name
+                shutil.copyfile(HSTDataItem.filename, newPath)
+                HSTDataItem.filename = newPath
+
+
         self.start = start
 
         self.end = end
 
-
     def __str__(self):
 
         for HSTDataItem in self.HSTDataItems:
-
             index, count = self.index_count(HSTDataItem)
 
             print(HSTDataItem)
@@ -65,8 +90,6 @@ class HSTSlice(object):
 
             print(HSTDataItem[index:index + count])
 
-
-
     def scale(self, o_min: int, o_max: int, n_min: int, n_max: int) -> None:
 
         """
@@ -77,7 +100,6 @@ class HSTSlice(object):
         """
 
         for HSTDataItem in self.HSTDataItems:
-
             index, count = self.index_count(HSTDataItem)
 
             # index = 0
@@ -105,7 +127,6 @@ class HSTSlice(object):
                                    o_max,
                                    n_min,
                                    n_max)
-
 
     def index_count(self, HSTDI: HSTData) -> (int, int):
         """
