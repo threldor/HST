@@ -208,9 +208,16 @@ class HSTData(object):
                    o_min: int,
                    o_max: int,
                    n_min: int,
-                   n_max: int) -> None:
+                   n_max: int,
+                   pathMod: Path = None) -> None:
 
-        with open(self.filename, 'r+b') as f:
+        if self.bytes == 8:   # temp return on floats
+            return
+
+        if pathMod:
+            pathMod = pathMod / self.filename.name
+
+        with open(pathMod or self.filename, 'r+b') as f:
 
             # f.seek(self.header.itemsize + index * 2)  # todo optional times 2 or times 8 dependant bytes
             f.seek(self.header.itemsize + index * self.bytes)  # todo optional times 2 or times 8 dependant bytes

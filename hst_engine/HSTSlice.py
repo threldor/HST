@@ -29,8 +29,8 @@ class HSTSlice(object):
                  resultFolder: str = "result") -> None:
         """
 
-        :type inplace: bool
-        :type master: HSTMaster
+        :param inplace: bool
+        :param master: HSTMaster
         """
         self.master = master
 
@@ -54,9 +54,12 @@ class HSTSlice(object):
             # copy to and set dir
             for HSTDataItem in self.HSTDataItems:
                 newPath = self.resultPath / HSTDataItem.filename.name
-                shutil.copyfile(HSTDataItem.filename, newPath)
-                HSTDataItem.filename = newPath
 
+                if os.path.exists(newPath):
+                    os.remove(newPath)
+
+                shutil.copyfile(HSTDataItem.filename, newPath)
+                #HSTDataItem.filename = newPath
 
         self.start = start
 
@@ -100,6 +103,7 @@ class HSTSlice(object):
         """
 
         for HSTDataItem in self.HSTDataItems:
+
             index, count = self.index_count(HSTDataItem)
 
             # index = 0
@@ -126,11 +130,12 @@ class HSTSlice(object):
                                    o_min,
                                    o_max,
                                    n_min,
-                                   n_max)
+                                   n_max,
+                                   self.resultPath)
 
     def index_count(self, HSTDI: HSTData) -> (int, int):
         """
-        :type HSTDI: HSTData
+        :param HSTDI: HSTData
         """
 
         i = 0

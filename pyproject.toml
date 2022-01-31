@@ -8,6 +8,7 @@ authors = ["JaunvanHeerden <jaun.vanheerden@allianceautomation.com.au>"]
 python = ">=3.8.0,<3.11"
 numpy = "<1.22.0"
 numba = "^0.55.0"
+pytest = "^6.2.5"
 
 [tool.poetry.dev-dependencies]
 
