@@ -17,6 +17,7 @@ from pathlib import Path
 import numpy as np
 import os
 
+
 class HSTMaster(object):
 
     def __init__(self, parent, filename: Path) -> None:
@@ -51,7 +52,14 @@ class HSTMaster(object):
 
         self.filePointer = self.data[self.filePointerRef]['filePointer']
 
-        self.earliest = datetime.datetime.utcfromtimestamp(min(self.data['startTime']))
+        try:
+
+            self.earliest = datetime.datetime.utcfromtimestamp(min(self.data['startTime']))
+
+        except:
+
+            self.earliest = datetime.datetime.utcfromtimestamp(int(min(self.data['startTime'])/100000000))
+
 
     def __len__(self) -> int:
 
@@ -63,7 +71,5 @@ class HSTMaster(object):
 
 
 if __name__ == '__main__':
-    # inputFile = Path("../resources/converted/ST051DOS01FIT0780201acHi.HST")
-    #
-    # hst_master = HSTMaster(inputFile)
+
     pass

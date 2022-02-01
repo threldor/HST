@@ -15,7 +15,7 @@ from HSTData import HSTData
 from pathlib import Path
 import datetime
 from numba.typed import List
-from utils.scaling import scale
+# from hst_engine.utils.scaling import scale
 from HSTSlice import HSTSlice
 import typing
 from utils.datetime_conversion import datetime_to_index
@@ -93,7 +93,9 @@ class HST(object):
             return HSTSlice(self.HSTMaster, dataItems, _index, _index)
 
     def load(self, filename: Path) -> None:
-        """load the HSTMaster item and children HSTData items"""
+        """load the HSTMaster item and children HSTData items
+        :type filename: object
+        """
 
         self.filename = filename
 
@@ -112,35 +114,49 @@ class HST(object):
 
 
     def get_HSTDataItems(self, start_index: int, count: int = 1):
+        """
 
+        :param count: 
+        :type start_index: object
+        """
         # find files
         startIndex = int(start_index / self.dataLengthSegment)
 
         stopIndex = int((start_index + count) / self.dataLengthSegment)
 
         if startIndex != stopIndex:
+
             return self.HSTDataItems[startIndex:stopIndex + 1]
+
         else:
+
             return [self.HSTDataItems[startIndex]]
 
 
     def subscript_process(self, subscript: typing.Union[datetime.datetime, slice]):
-        """x"""
+        """x
+        :type subscript: object
+        """
         if isinstance(subscript, slice):
 
             _start = subscript.start
+
             _stop = subscript.stop
 
             if isinstance(_start, datetime.datetime):
+
                 _start = datetime_to_index(_start, self.HSTMaster.earliest, 30)
 
             if isinstance(_stop, datetime.datetime):
+
                 _stop = datetime_to_index(_stop, self.HSTMaster.earliest, 30)
 
             return slice(_start, _stop)
 
         else:
+            
             if isinstance(subscript, datetime.datetime):
+
                 return datetime_to_index(subscript, self.HSTMaster.earliest, 30)
 
         return subscript
@@ -149,55 +165,45 @@ class HST(object):
 
 if __name__ == '__main__':
 
-    inputFile = Path('../resources/ST051DOS01FIT0780201acHi.HST')
+    # setup the input file pointing to the HST_one file (master)
+    inputFile = Path('../resources/converted/2-byte/ST051DOS01FIT0780201acHi.HST')
 
-    hst = HST()
+    # create a blank HST_one object to set the drive prior to loading
+    hst = HST_one()
 
     hst.drive = 'C'
 
-    hst.repath = Path(r'C:\Users\jaun.vanheerden\PycharmProjects\HST\resources\converted')
+    # repath to the following dir, this repath replaces the paths
+    # within the HST_one
+    hst.repath = Path(r'C:\Users\jaun.vanheerden\PycharmProjects\HST\resources\converted\2-byte')
 
+    # load
     hst.load(inputFile)
 
+    # <single file editing>
+    # choose object
+    HST_10 = hst.HSTDataItems[10]
 
-    # setup datetime
+    # modify header
+    # as keyword args
+    #HST_10.modHeader(EngFull=1000)
+    #HST_10.modHeader(endTime=131337503700000010)
+    # or as dict
+    HST_10.modHeader({'sEngUnits': 'm/s2'})
+    # or as both
+    HST_10.modHeader({'sEngUnits': 'UNIT'}, EngZero=0)
+
+    # <time slice editing (multifile)>
+
+    # setup a time span
     start = datetime.datetime(2020, 12, 12, 0, 1, 0)
 
     end = datetime.datetime(2021, 12, 12, 0, 4, 0)
 
+    # create a slice, very easy non-inclusive end
+    # this can also be indexes based from the oldest file start
+    # as the offset start - negative indexes allowed
     slice_dt = hst[start:end]
 
-
-    # mod header 
-    hst.HSTDataItems[10].modHeader(sEngUnits='m/s')
-    hst.HSTDataItems[10].modHeader(**{'sEngUnits': 'm/s2'})
-
-    hst.HSTDataItems[10].modHeader(EngZero=0)
-
-    # get slice based on datetime
-
-    #slice_dt.scale(0, 100, 0, 1000)
-
-    start = datetime.datetime(2021, 12, 12, 0, 1, 0)
-
-    end = datetime.datetime(2021, 12, 12, 0, 4, 0)
-
-    slice_dt = hst[start:end]
-
+    # can now scale this section
     slice_dt.scale(0, 100, 0, 1000)
-
-    slice_009 = hst[5221440 + 10:5221440 + 20]
-
-    #slice_009.scale(0, 500, 0, 100)
-
-    slice1 = hst[10_000:20_000]
-
-    #slice1.scale(0, 500, 0, 100)
-
-    print(hst[:20161])
-    print(hst[-2:])
-    print(hst[-50: -10000])
-    print(hst[20160])
-    print(hst[20161])
-
-    print(scale(List(list(range(0, 1000, 2))), 0, 1000, -100, 100))

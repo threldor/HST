@@ -19,7 +19,7 @@ def date_to_webkit(date_string):
         diff.days * seconds_in_day + diff.seconds + diff.microseconds)
 
 
-# Convert HST start/end time into dateTime
+# Convert HST_one start/end time into dateTime
 def HST_Time_to_datetime(startTime):
     # depending on 2 byte (int32) or 8 byte (int64)
     if startTime.itemsize == 8:
@@ -30,14 +30,14 @@ def HST_Time_to_datetime(startTime):
         return datetime.datetime.utcfromtimestamp(DATAHdata['startTime'])  # seconds since 1970
 
 
-# Convert HST sample period into dateTime
+# Convert HST_one sample period into dateTime
 def HST_Sample_to_datetime(samplePeriod):
     return datetime.timedelta(milliseconds=int(samplePeriod))
 
 
-# inputFile = "converted/ST051DOS01FIT0780201acHi.HST"
-# inputFile = "converted/8-Byte Trends/ST051DOS01FIT0780201acHi.HST"
-inputFile = "D:\\CitectSCADA\\Data\\ST051\\TREND\\ST051DOS01FIT0780201acHi.HST"
+# inputFile = "converted/ST051DOS01FIT0780201acHi.HST_one"
+# inputFile = "converted/8-Byte Trends/ST051DOS01FIT0780201acHi.HST_one"
+inputFile = "D:\\CitectSCADA\\Data\\ST051\\TREND\\ST051DOS01FIT0780201acHi.HST_one"
 
 
 # given version return data header type
@@ -325,7 +325,7 @@ masterHeader = [('title', '|S128'),
 
 # set data type
 HSTMdt = np.dtype(masterHeader)
-# read the HST and push to dict
+# read the HST_one and push to dict
 f = np.fromfile(inputFile, dtype=HSTMdt, count=1)
 HSTMdata = dict(zip(f.dtype.names, f[0]))
 
@@ -338,9 +338,9 @@ print('---MASTER HEADER--- ' + str(HSTMdt.itemsize))
 for key, value in HSTMdata.items():
     print(key, ' : ', value)
 
-# now prep to read the HST headers for data
+# now prep to read the HST_one headers for data
 HSTHdt = np.dtype(HSTHeader(version))
-# read the HST data array and push to dict, offset by master header
+# read the HST_one data array and push to dict, offset by master header
 f = np.fromfile(inputFile, dtype=HSTHdt, count=nFiles, offset=HSTMdt.itemsize)
 
 print('')
@@ -445,7 +445,7 @@ sampleDelta = HST_Sample_to_datetime(DATAHdata['samplePeriod'])
 
 
 DATAdt = np.dtype(DataData(version))
-# read the HST data array and push to dict, offset by data header
+# read the HST_one data array and push to dict, offset by data header
 f = np.fromfile(ospath, dtype=DATAdt, count=dataLength, offset=DATAHdt.itemsize)
 
 print('---DATAAA DATAAA---')

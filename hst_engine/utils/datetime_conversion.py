@@ -45,7 +45,7 @@ def date_to_webkit(date_string: str) -> str:
         diff.days * seconds_in_day + diff.seconds + diff.microseconds)
 
 
-# Convert HST start/end time into dateTime
+# Convert HST_one start/end time into dateTime
 def HST_Time_to_datetime(startTime: np.int32) -> datetime:
     """
     Args:
@@ -63,7 +63,7 @@ def HST_Time_to_datetime(startTime: np.int32) -> datetime:
         return datetime.datetime.utcfromtimestamp(startTime)  # seconds since 1970
 
 
-# Convert HST sample period into dateTime
+# Convert HST_one sample period into dateTime
 def HST_Sample_to_datetime(sample_period: str) -> datetime:
     """x
 

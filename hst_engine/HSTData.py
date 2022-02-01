@@ -12,10 +12,10 @@ from HSTMaster import HSTMaster
 from utils.str_conversion import bytes_to_str
 from pprint import pprint
 import os
-# import datetime
 from utils.scaling import scale
 from functools import reduce
 import typing
+
 
 __author__ = __maintainer__ = ["Jaun van Heerden"]
 __version__ = "1.0.0"
@@ -34,11 +34,9 @@ class HSTData(object):
 
         self.masterItem = masterItem
 
-        self.dt_header = np.dtype(header_data(master['version']))
+        self.dt_header = np.dtype(header_data(masterItem['version']))
 
         self.filename: Path = Path(bytes_to_str(self.masterItem['name']))
-
-        # self.sampleRate = datetime.timedelta(milliseconds=int(self.masterItem['samplePeriod']))
 
         self.index: typing.Union[int, None] = None
 
@@ -54,20 +52,25 @@ class HSTData(object):
 
         self.load()
 
-        print(...)
 
     def __getitem__(self, subscript):
 
         if isinstance(subscript, slice):
             # do your handling for a slice object:
 
+            if subscript.stop is None and subscript.start is None:
+
+                return self.get_data(0, self.masterItem['dataLength'])
+
             # ignore step
             if subscript.stop is None:
+
                 start_index = (self.masterItem['dataLength'] + subscript.start) % self.masterItem['dataLength']
 
                 return self.get_data(start_index, self.masterItem['dataLength'] - 1 - start_index)
 
             if subscript.start is None:
+
                 stop_index = (self.masterItem['dataLength'] + subscript.stop) % self.masterItem['dataLength']
 
                 return self.get_data(0, stop_index)
@@ -97,20 +100,6 @@ class HSTData(object):
 
             return self.get_data(_index, 1)
 
-    # def __setitem__(self, subscript, value):
-    #
-    #     if isinstance(subscript, slice):
-    #         pass
-    #
-    #     else:
-    #
-    #         _index = (self.masterItem['dataLength'] + subscript) % self.masterItem['dataLength']
-    #
-    #         self.set_data(_index, [value])
-    #
-    #         if isinstance(value, list):
-    #
-    #             print('list input')
 
     def __repr__(self):
 
@@ -128,14 +117,16 @@ class HSTData(object):
 
     def load(self):
 
-        # read the HST and push to dict
+        # read the HST_one and push to dict
 
         try:
 
             if self.master.parent.drive is not None:
+
                 self.filename = Path(f"{self.master.parent.drive}:{os.path.splitdrive(self.filename)[-1]}")
 
             if self.master.parent.repath is not None:
+
                 self.filename = self.master.parent.repath / self.filename.name
 
             self.header = np.fromfile(self.filename, dtype=self.dt_header, count=1)[0]
@@ -145,42 +136,30 @@ class HSTData(object):
             print(e)
 
         if self.header is not None:
+
             self.dt_data = np.dtype(data_format(self.header['version']))
 
             self.bytes = 8 if self.header['version'] in [EightByteV531, EightByteV600] else 2
 
-            pprint(self.header)
 
     def get_data(self, index: int, count: int):
+        """
 
+        :param count:
+        :type index: object
+        """
         data = np.fromfile(self.filename,
                            dtype=self.dt_data,
                            count=count,
                            offset=self.dt_header.itemsize + self.dt_data.itemsize * index)  # skip header
 
-        # get timestamp
-        # for i in range(len(data)):
-        #
-        #     timestamp_raw = self.masterItem['startTime'] + self.sampleRate.total_seconds() * (i + index)
-        #
-        #     timestamp = datetime.datetime.utcfromtimestamp(timestamp_raw)
-
         return data
 
-    # def set_data(self, index: int, data: list) -> None:
-    #
-    #     with open(self.filename, 'r+b') as f:
-    #         f.seek(self.header.itemsize + index)
-    #         # f.write(val.to_bytes(2, 'little'))
-    #         # f.write(struct.pack("d", floatval))
-    #         # f.write(''.join(data).encode('ascii'))
-    #         # f.write(data[0].to_bytes(2, 'little'))
-    #         f.write(bytearray(data))
-    #
-    #         # f.write(GATED_DATA_8_HEX)
 
     def set_index(self, index: int) -> None:
-        """sets the relative index based on the order within the `HSTDataItems` list """
+        """sets the relative index based on the order within the `HSTDataItems` list
+        :type index: object
+        """
         self.index = index
 
         _spanIndex = self.index * self.master.dataLengthSegment
@@ -188,18 +167,30 @@ class HSTData(object):
         self.span = range(_spanIndex, _spanIndex + self.master.dataLengthSegment - 1)
 
 
-    def modHeader(self, **kwargs: dict):
+    def modHeader(self, *args, **kwargs: dict):
         """
+        :type args: object
         :type kwargs: dict
 
         """
+        for arg in args:
+
+            kwargs.update(arg)
+
         for key, value in kwargs.items():
+
             if key in self.header.dtype.names:
+
                 self.header[key] = value
+
                 with open(self.filename, 'r+b') as f:
+
                     f.seek(0)
+
                     f.write(self.header.tobytes())
+
             else:
+
                 print(f'{key} not in header')
 
     def scale_data(self,
@@ -210,45 +201,67 @@ class HSTData(object):
                    n_min: int,
                    n_max: int,
                    pathMod: Path = None) -> None:
+        """
 
+        :param pathMod:
+        :param n_max:
+        :param n_min:
+        :param o_max:
+        :param o_min:
+        :param count:
+        :param index: object
+        """
         if self.bytes == 8:   # temp return on floats
+
             return
 
         if pathMod:
+
             pathMod = pathMod / self.filename.name
 
         with open(pathMod or self.filename, 'r+b') as f:
 
-            # f.seek(self.header.itemsize + index * 2)  # todo optional times 2 or times 8 dependant bytes
             f.seek(self.header.itemsize + index * self.bytes)  # todo optional times 2 or times 8 dependant bytes
 
-            # sample = f.read(2 * count)
             sample = f.read(self.bytes * count)
 
             if self.bytes == 2:
-                data = [int.from_bytes(sample[k:k + self.bytes], 'little') for k in range(0, len(sample), self.bytes)]
-            else:
-                data = np.frombuffer(sample, dtype='float')
 
-            # data = [int.from_bytes(sample[k:k + 2], 'little') for k in range(0, len(sample), 2)]
+                data = [int.from_bytes(sample[k:k + self.bytes], 'little') for k in range(0, len(sample), self.bytes)]
+
+            else:
+
+                data = np.frombuffer(sample, dtype='float')
 
             scaled = [int(val) for val in scale(data, o_min, o_max, n_min, n_max)]
 
+            result = []
+
             if self.bytes == 2:
-                result = [val.to_bytes(self.bytes, 'little') for val in scaled]
+
+                for val in scaled:
+
+                    val = 65535 if val > 65535 else val
+
+                    check = val.to_bytes(self.bytes, 'little')
+
+                    result.append(check)
+
             else:
+
                 result = np.array(scaled).tobytes()
 
-            # result = [val.to_bytes(2, 'little') for val in scaled]
-
             f.seek(self.header.itemsize + index * self.bytes)
-            # f.seek(self.header.itemsize + index * 2)
 
             if type(result) is not bytes:
+
                 f.write(reduce(lambda x, y: x + y, result))
+
             else:
+
                 f.write(result)
 
 
 if __name__ == '__main__':
+
     pass

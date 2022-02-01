@@ -4,12 +4,14 @@ Example:
     $ python hst_engine.py
 """
 
+
 # imports
 from HSTMaster import HSTMaster
 from HSTData import HSTData
 import shutil
 import os
-
+import numpy as np
+from numba import jit
 
 __author__ = __maintainer__ = ["Jaun van Heerden"]
 __version__ = "1.0.0"
@@ -42,6 +44,8 @@ class HSTSlice(object):
 
         self.resultPath = None
 
+        self.sampleRate = 30
+
         if not self.inplace:
 
             # add folder if does not exist
@@ -49,17 +53,19 @@ class HSTSlice(object):
             self.resultPath = self.master.filename.parent / self.resultFolder
 
             if not os.path.exists(self.resultPath):
+
                 os.mkdir(self.resultPath)
 
             # copy to and set dir
             for HSTDataItem in self.HSTDataItems:
+
                 newPath = self.resultPath / HSTDataItem.filename.name
 
                 if os.path.exists(newPath):
+
                     os.remove(newPath)
 
                 shutil.copyfile(HSTDataItem.filename, newPath)
-                #HSTDataItem.filename = newPath
 
         self.start = start
 
@@ -68,30 +74,13 @@ class HSTSlice(object):
     def __str__(self):
 
         for HSTDataItem in self.HSTDataItems:
+
             index, count = self.index_count(HSTDataItem)
 
-            print(HSTDataItem)
+            #print(HSTDataItem)
 
             index = 0
 
-            # if self.start in HSTDataItem.span:
-            #
-            #     index = self.start % HSTDataItem.masterItem['dataLength']
-            #
-            #     if self.end in HSTDataItem.span:
-            #         count = self.end - self.start
-            #     else:
-            #         count = HSTDataItem.masterItem['dataLength'] - index
-            #
-            # elif self.end in HSTDataItem.span:
-            #
-            #     count = self.end % HSTDataItem.masterItem['dataLength']
-            #
-            # else:
-            #
-            #     count = HSTDataItem.masterItem['dataLength']
-
-            print(HSTDataItem[index:index + count])
 
     def scale(self, o_min: int, o_max: int, n_min: int, n_max: int) -> None:
 
@@ -106,25 +95,6 @@ class HSTSlice(object):
 
             index, count = self.index_count(HSTDataItem)
 
-            # index = 0
-            #
-            # if self.start in HSTDataItem.span:
-            #
-            #     index = self.start % HSTDataItem.masterItem['dataLength']
-            #
-            #     if self.end in HSTDataItem.span:
-            #         count = self.end - self.start
-            #     else:
-            #         count = HSTDataItem.masterItem['dataLength'] - index
-            #
-            # elif self.end in HSTDataItem.span:
-            #
-            #     count = self.end % HSTDataItem.masterItem['dataLength']
-            #
-            # else:
-            #
-            #     count = HSTDataItem.masterItem['dataLength']
-
             HSTDataItem.scale_data(index,
                                    count,
                                    o_min,
@@ -132,6 +102,17 @@ class HSTSlice(object):
                                    n_min,
                                    n_max,
                                    self.resultPath)
+
+    def modHeader(self, *args, **kwargs):
+        """
+
+        :type kwargs: object
+        :type args: object
+        """
+        for HSTDataItem in self.HSTDataItems:
+            
+            HSTDataItem.modHeader(args, kwargs)
+
 
     def index_count(self, HSTDI: HSTData) -> (int, int):
         """
@@ -145,8 +126,11 @@ class HSTSlice(object):
             i = self.start % HSTDI.masterItem['dataLength']
 
             if self.end in HSTDI.span:
+
                 c = self.end - self.start
+
             else:
+
                 c = HSTDI.masterItem['dataLength'] - i
 
         elif self.end in HSTDI.span:
@@ -158,3 +142,19 @@ class HSTSlice(object):
             c = HSTDI.masterItem['dataLength']
 
         return i, c
+
+
+    def get_data(self):
+
+        if len(self.HSTDataItems) == 1:
+            data = self.HSTDataItems[0][self.start:self.end]
+        elif len(self.HSTDataItems) == 2:
+            data = self.HSTDataItems[0][self.start:] + self.HSTDataItems[0][:self.end]
+        else:
+            data = [item[0] for item in self.HSTDataItems[0][self.start:]] + \
+                   [item[0] for HSTDataItem in self.HSTDataItems[1:-1] for item in HSTDataItem[:]] + \
+                   [item[0] for item in self.HSTDataItems[0][:self.end]]
+
+
+        return np.array([data, list(range(self.start, self.end, self.sampleRate))])
+

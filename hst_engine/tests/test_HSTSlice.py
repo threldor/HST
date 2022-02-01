@@ -1,4 +1,4 @@
-from hst_engine.HST import HST
+from hst_engine.hst import HST_one
 import pytest
 from pathlib import Path
 import os
@@ -15,8 +15,8 @@ path = os.path.dirname(os.path.realpath(__file__))
 cwd = Path.cwd()
 
 def test_HSTSlice_len():
-    inputFile = Path('../resources/ST051DOS01FIT0780201acHi.HST')
-    hst = HST()
+    inputFile = Path('../resources/ST051DOS01FIT0780201acHi.HST_one')
+    hst = HST_one()
     hst.drive = 'C'
     hst.repath = Path(r'C:\Users\jaun.vanheerden\PycharmProjects\HST\resources\converted')
     hst.load(inputFile)
