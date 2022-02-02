@@ -16,7 +16,6 @@ from utils.scaling import scale
 from functools import reduce
 import typing
 
-
 __author__ = __maintainer__ = ["Jaun van Heerden"]
 __version__ = "1.0.0"
 __email__ = ["jaun.vanheerden@allianceautomation.com.au"]
@@ -52,25 +51,21 @@ class HSTData(object):
 
         self.load()
 
-
     def __getitem__(self, subscript):
 
         if isinstance(subscript, slice):
             # do your handling for a slice object:
 
             if subscript.stop is None and subscript.start is None:
-
                 return self.get_data(0, self.masterItem['dataLength'])
 
             # ignore step
             if subscript.stop is None:
-
                 start_index = (self.masterItem['dataLength'] + subscript.start) % self.masterItem['dataLength']
 
                 return self.get_data(start_index, self.masterItem['dataLength'] - 1 - start_index)
 
             if subscript.start is None:
-
                 stop_index = (self.masterItem['dataLength'] + subscript.stop) % self.masterItem['dataLength']
 
                 return self.get_data(0, stop_index)
@@ -100,7 +95,6 @@ class HSTData(object):
 
             return self.get_data(_index, 1)
 
-
     def __repr__(self):
 
         return self.filename.name
@@ -122,11 +116,9 @@ class HSTData(object):
         try:
 
             if self.master.parent.drive is not None:
-
                 self.filename = Path(f"{self.master.parent.drive}:{os.path.splitdrive(self.filename)[-1]}")
 
             if self.master.parent.repath is not None:
-
                 self.filename = self.master.parent.repath / self.filename.name
 
             self.header = np.fromfile(self.filename, dtype=self.dt_header, count=1)[0]
@@ -136,11 +128,9 @@ class HSTData(object):
             print(e)
 
         if self.header is not None:
-
             self.dt_data = np.dtype(data_format(self.header['version']))
 
             self.bytes = 8 if self.header['version'] in [EightByteV531, EightByteV600] else 2
-
 
     def get_data(self, index: int, count: int):
         """
@@ -155,7 +145,6 @@ class HSTData(object):
 
         return data
 
-
     def set_index(self, index: int) -> None:
         """sets the relative index based on the order within the `HSTDataItems` list
         :type index: object
@@ -166,7 +155,6 @@ class HSTData(object):
 
         self.span = range(_spanIndex, _spanIndex + self.master.dataLengthSegment - 1)
 
-
     def modHeader(self, *args, **kwargs: dict) -> None:
         """
         :param pathMod:
@@ -175,16 +163,19 @@ class HSTData(object):
 
         """
 
+        for arg in args:
+
+            if isinstance(arg, tuple):
+                for element in arg:
+                    kwargs.update(element)
+            else:
+
+                kwargs.update(arg)
+
         pathMod = None
 
         if 'pathMod' in kwargs:
-
             pathMod = kwargs.pop('pathMod') / self.filename.name
-
-
-        for arg in args:
-
-            kwargs.update(arg)
 
         for key, value in kwargs.items():
 
@@ -197,6 +188,8 @@ class HSTData(object):
                     f.seek(0)
 
                     f.write(self.header.tobytes())
+
+                    f.flush()
 
             else:
 
@@ -213,6 +206,7 @@ class HSTData(object):
                    clamped: bool = False) -> None:
         """
 
+        :param clamped:
         :param pathMod:
         :param n_max:
         :param n_min:
@@ -221,12 +215,17 @@ class HSTData(object):
         :param count:
         :param index: object
         """
-        if self.bytes == 8:   # temp return on floats
+
+        o_min = int(o_min)
+        o_max = int(o_max)
+        n_min = int(n_min)
+        n_max = int(n_max)
+
+        if self.bytes == 8:  # temp return on floats
 
             return
 
         if pathMod is not None:
-
             pathMod = pathMod / self.filename.name
 
         with open(pathMod or self.filename, 'r+b') as f:
@@ -258,17 +257,14 @@ class HSTData(object):
                     if clamped:
 
                         if val > self.header['EngFull']:
-
                             val = self.header['EngFull']
 
                         if val < self.header['EngMin']:
-
                             val = self.header['EngMin']
 
                     else:
 
-                        if val > self.header['EngFull'] or val < self.header['EngMin']:
-
+                        if val > self.header['EngFull'] or val < self.header['EngZero']:
                             val = -32001
 
                     check = val.to_bytes(self.bytes, 'little', signed=True)
@@ -289,7 +285,8 @@ class HSTData(object):
 
                 f.write(result)
 
+            f.flush()
+
 
 if __name__ == '__main__':
-
     pass
