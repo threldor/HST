@@ -251,7 +251,7 @@ class HSTData(object):
 
                 for val in scaled:
 
-                    val = 65535 if val > 65535 else val
+                    val = 32767 if val > 32767 else val
 
                     # todo invalid or clamped ?
 
@@ -271,7 +271,7 @@ class HSTData(object):
 
                             val = -32001
 
-                    check = val.to_bytes(self.bytes, 'little', signed=False)
+                    check = val.to_bytes(self.bytes, 'little', signed=True)
 
                     result.append(check)
 
