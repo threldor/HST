@@ -109,9 +109,12 @@ class HSTSlice(object):
         :type kwargs: object
         :type args: object
         """
+
+        kwargs['pathMod'] = self.resultPath
+
         for HSTDataItem in self.HSTDataItems:
             
-            HSTDataItem.modHeader(self.resultPath, args, kwargs)
+            HSTDataItem.modHeader(args, kwargs)
 
 
     def index_count(self, HSTDI: HSTData) -> (int, int):

@@ -167,7 +167,7 @@ class HSTData(object):
         self.span = range(_spanIndex, _spanIndex + self.master.dataLengthSegment - 1)
 
 
-    def modHeader(self, pathMod: Path = None, *args, **kwargs: dict) -> None:
+    def modHeader(self, *args, **kwargs: dict) -> None:
         """
         :param pathMod:
         :param args: object
@@ -175,9 +175,12 @@ class HSTData(object):
 
         """
 
-        if pathMod is not None:
+        pathMod = None
 
-            pathMod = pathMod / self.filename.name
+        if 'pathMod' in kwargs:
+
+            pathMod = kwargs.pop('pathMod') / self.filename.name
+
 
         for arg in args:
 
@@ -206,7 +209,8 @@ class HSTData(object):
                    o_max: int,
                    n_min: int,
                    n_max: int,
-                   pathMod: Path = None) -> None:
+                   pathMod: Path = None,
+                   clamped: bool = False) -> None:
         """
 
         :param pathMod:
@@ -249,7 +253,25 @@ class HSTData(object):
 
                     val = 65535 if val > 65535 else val
 
-                    check = val.to_bytes(self.bytes, 'little')
+                    # todo invalid or clamped ?
+
+                    if clamped:
+
+                        if val > self.header['EngFull']:
+
+                            val = self.header['EngFull']
+
+                        if val < self.header['EngMin']:
+
+                            val = self.header['EngMin']
+
+                    else:
+
+                        if val > self.header['EngFull'] or val < self.header['EngMin']:
+
+                            val = -32001
+
+                    check = val.to_bytes(self.bytes, 'little', signed=False)
 
                     result.append(check)
 
