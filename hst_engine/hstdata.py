@@ -15,6 +15,7 @@ import os
 from utils.scaling import scale
 from functools import reduce
 import typing
+from copy import copy
 
 __author__ = __maintainer__ = ["Jaun van Heerden"]
 __version__ = "1.0.0"
@@ -177,23 +178,28 @@ class HSTData(object):
         if 'pathMod' in kwargs:
             pathMod = kwargs.pop('pathMod') / self.filename.name
 
+            # copy header for multiprocessing
+            header_copy = copy(self.header)
+
         for key, value in kwargs.items():
 
-            if key in self.header.dtype.names:
+            if key in header_copy.dtype.names:
 
-                self.header[key] = value
+                header_copy[key] = value
 
                 with open(pathMod or self.filename, 'r+b') as f:
 
                     f.seek(0)
 
-                    f.write(self.header.tobytes())
+                    f.write(header_copy.tobytes())
 
-                    f.flush()
+                    #f.flush()
 
             else:
 
                 print(f'{key} not in header')
+
+        self.header = header_copy
 
     def scale_data(self,
                    index: int,

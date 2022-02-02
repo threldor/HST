@@ -16,7 +16,7 @@ import datetime
 import json
 import multiprocessing
 from pathlib import Path
-from multiprocessing import Pool
+from multiprocessing import Pool, cpu_count, freeze_support
 import tqdm
 import time
 from hstscript import HSTScript
@@ -32,11 +32,11 @@ class HST_Multi:
         self.HSTs = []
 
     def run(self):
-        # with Pool(2) as p:
-        #     p.map(process, self.HSTs)
-            #tqdm.tqdm(p.map(process, self.HSTs), total=len(self.HSTs))
-        for h in self.HSTs:
-            self.process(h)
+        with Pool(cpu_count()) as p:
+            #p.map(process, self.HSTs)
+            tqdm.tqdm(p.map(process, self.HSTs), total=len(self.HSTs))
+        # for h in self.HSTs:
+        #     self.process(h)
 
     def process(self, hst):
         for script in hst:
@@ -52,7 +52,7 @@ class HST_Multi:
 
                 hst_group = []
 
-                filename, *timeslices = scriptLine.split(',?')
+                filename, *timeslices = [line.strip() for line in scriptLine.split(',?')]
 
                 print(filename)
 
@@ -98,6 +98,7 @@ def process(hst):
 
 # main
 if __name__ == '__main__':
+    freeze_support()
 
     hstm = HST_Multi()
 
