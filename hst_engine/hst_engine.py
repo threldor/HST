@@ -15,15 +15,27 @@ __status__ = "Production"
 from pathlib import Path
 from hst import HST
 import datetime
-
+import json
 
 # main
 if __name__ == '__main__':
 
+    # load in user specific config
+    with open('config.json') as json_file:
+
+        _config = json.load(json_file)
+
+    _path = Path(_config['path'])
+
+
     # -- 2-BYTE --
 
     # setup the input file pointing to the HST_one file (master)
-    inputFile = Path('../resources/converted/2-byte/ST051DOS01FIT0780201acHi.HST')
+    # inputFile = Path('../resources/converted/2-byte/ST051DOS01FIT0780201acHi.HST')
+
+    inputPath_2 = _path / 'resources/converted/2-byte'
+
+    inputFile_2 = inputPath_2 / 'ST051DOS01FIT0780201acHi.HST'
 
     # create a blank HST_one object to set the drive prior to loading
     hst = HST()
@@ -32,10 +44,10 @@ if __name__ == '__main__':
 
     # repath to the following dir, this repath replaces the paths
     # within the HST_one
-    hst.repath = Path(r'C:\Users\jaun.vanheerden\PycharmProjects\HST\resources\converted\2-byte')
+    hst.repath = inputPath_2
 
     # load
-    hst.load(inputFile)
+    hst.load(inputFile_2)
 
     # <single file editing>
     # choose object
@@ -67,12 +79,14 @@ if __name__ == '__main__':
     slice_dt.scale(0, 100, 0, 1000)
 
     V = slice_dt.get_data()
-    print('e')
+
 
     # -- 8-BYTE --
 
     # setup the input file pointing to the HST_one file (master)
-    inputFile = Path('../resources/converted/8-byte/ST051DOS01FIT0780201acHi.HST')
+    inputPath_8 = _path / 'resources/converted/8-byte'
+
+    inputFile_8 = inputPath_8 / 'ST051DOS01FIT0780201acHi.HST'
 
     # create a blank HST_one object to set the drive prior to loading
     hst = HST()
@@ -81,10 +95,10 @@ if __name__ == '__main__':
 
     # repath to the following dir, this repath replaces the paths
     # within the HST_one
-    hst.repath = Path(r'C:\Users\jaun.vanheerden\PycharmProjects\HST\resources\converted\8-byte')
+    hst.repath = inputPath_8
 
     # load
-    hst.load(inputFile)
+    hst.load(inputFile_8)
 
     # <single file editing>
     # choose object

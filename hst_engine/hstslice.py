@@ -6,8 +6,8 @@ Example:
 
 
 # imports
-from HSTMaster import HSTMaster
-from HSTData import HSTData
+from hstmaster import HSTMaster
+from hstdata import HSTData
 import shutil
 import os
 import numpy as np
@@ -156,5 +156,5 @@ class HSTSlice(object):
                    [item[0] for item in self.HSTDataItems[0][:self.end]]
 
 
-        return np.array([data, list(range(self.start, self.end, self.sampleRate))])
+        return [data, list(range(self.start, self.end, self.sampleRate))]
 

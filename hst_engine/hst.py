@@ -10,13 +10,13 @@ __email__ = ["jaun.vanheerden@allianceautomation.com.au"]
 __status__ = "Production"
 
 # imports
-from HSTMaster import HSTMaster
-from HSTData import HSTData
+from hstmaster import HSTMaster
+from hstdata import HSTData
 from pathlib import Path
 import datetime
 from numba.typed import List
 # from hst_engine.utils.scaling import scale
-from HSTSlice import HSTSlice
+from hstslice import HSTSlice
 import typing
 from utils.datetime_conversion import datetime_to_index
 

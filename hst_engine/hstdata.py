@@ -8,7 +8,7 @@ Example:
 from formats import header_data, data_format, EightByteV600, EightByteV531
 from pathlib import Path
 import numpy as np
-from HSTMaster import HSTMaster
+from hstmaster import HSTMaster
 from utils.str_conversion import bytes_to_str
 from pprint import pprint
 import os
