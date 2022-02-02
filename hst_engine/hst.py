@@ -23,7 +23,10 @@ from utils.datetime_conversion import datetime_to_index
 
 class HST(object):
 
-    def __init__(self, filename: Path = None) -> None:
+    def __init__(self,
+                 filename: Path = None,
+                 repath: Path = None,
+                 drive: str = None) -> None:
         """
 
         :type filename: Path
@@ -34,9 +37,9 @@ class HST(object):
 
         self.filename = None
 
-        self.drive = None
+        self.drive = drive
 
-        self.repath = None
+        self.repath = repath
 
         self.samplePeriod = None
 
