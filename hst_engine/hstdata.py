@@ -167,12 +167,18 @@ class HSTData(object):
         self.span = range(_spanIndex, _spanIndex + self.master.dataLengthSegment - 1)
 
 
-    def modHeader(self, *args, **kwargs: dict):
+    def modHeader(self, pathMod: Path = None, *args, **kwargs: dict) -> None:
         """
-        :type args: object
-        :type kwargs: dict
+        :param pathMod:
+        :param args: object
+        :param kwargs: dict
 
         """
+
+        if pathMod is not None:
+
+            pathMod = pathMod / self.filename.name
+
         for arg in args:
 
             kwargs.update(arg)
@@ -183,7 +189,7 @@ class HSTData(object):
 
                 self.header[key] = value
 
-                with open(self.filename, 'r+b') as f:
+                with open(pathMod or self.filename, 'r+b') as f:
 
                     f.seek(0)
 
@@ -215,7 +221,7 @@ class HSTData(object):
 
             return
 
-        if pathMod:
+        if pathMod is not None:
 
             pathMod = pathMod / self.filename.name
 

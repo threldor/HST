@@ -111,7 +111,7 @@ class HSTSlice(object):
         """
         for HSTDataItem in self.HSTDataItems:
             
-            HSTDataItem.modHeader(args, kwargs)
+            HSTDataItem.modHeader(self.resultPath, args, kwargs)
 
 
     def index_count(self, HSTDI: HSTData) -> (int, int):
