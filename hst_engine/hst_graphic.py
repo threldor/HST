@@ -8,6 +8,16 @@ from pathlib import Path
 from hst import HST
 import datetime
 
+
+class TimeAxisItem(pg.AxisItem):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.setLabel(text='Time', units=None)
+        self.enableAutoSIPrefix(False)
+
+    def tickStrings(self, values, scale, spacing):
+        return [datetime.datetime.utcfromtimestamp(3445345).strftime("%D: %H:%M") for value in values]
+
 # setup the input file pointing to the HST_one file (master)
 inputFile = Path(r'../resources/converted/2-Byte/ST051DOS01FIT0780201acHi.HST')
 
@@ -40,10 +50,15 @@ slice_dt = hst[start:end]
 #data = np.random.normal(size=1000)
 data_x, data_y = slice_dt.get_data()
 
-pg.plot(data_x, data_y, title="Simplest possible plotting example")
+view = pg.plot(data_x, title="Simplest possible plotting example")
 
-# data = np.random.normal(size=(500,500))
-# pg.image(data, title="Simplest possible image example")
+view.plotItem.axes['bottom'] = TimeAxisItem(orientation='bottom')
+
+item = pg.InfiniteLine(movable=True)
+
+view.addItem(item)
+
+view.update()
 
 if __name__ == '__main__':
     pg.exec()
