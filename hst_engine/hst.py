@@ -169,7 +169,7 @@ if __name__ == '__main__':
     inputFile = Path('../resources/converted/2-byte/ST051DOS01FIT0780201acHi.HST')
 
     # create a blank HST_one object to set the drive prior to loading
-    hst = HST_one()
+    hst = HST()
 
     hst.drive = 'C'
 
