@@ -52,6 +52,8 @@ class HSTMaster(object):
 
         self.filePointer = self.data[self.filePointerRef]['filePointer']
 
+        self.samplePeriod = int(self.data['samplePeriod'][0]/1000)
+
         try:
 
             self.earliest = datetime.datetime.utcfromtimestamp(min(self.data['startTime']))

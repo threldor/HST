@@ -44,7 +44,7 @@ class HSTSlice(object):
 
         self.resultPath = None
 
-        self.sampleRate = 30
+        # self.sampleRate = 30
 
         if not self.inplace:
 
@@ -159,5 +159,5 @@ class HSTSlice(object):
                    [item[0] for item in self.HSTDataItems[0][:self.end]]
 
 
-        return [data, list(range(self.start, self.end, self.sampleRate))]
+        return [data, list(range(self.start, self.end, self.master.samplePeriod))]
 

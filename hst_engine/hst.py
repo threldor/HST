@@ -41,7 +41,7 @@ class HST(object):
 
         self.repath = repath
 
-        self.samplePeriod = None
+        #self.samplePeriod = None
 
         self.dataLengthSegment = None
 
@@ -148,11 +148,11 @@ class HST(object):
 
             if isinstance(_start, datetime.datetime):
 
-                _start = datetime_to_index(_start, self.HSTMaster.earliest, 30)
+                _start = datetime_to_index(_start, self.HSTMaster.earliest, self.HSTMaster.samplePeriod)
 
             if isinstance(_stop, datetime.datetime):
 
-                _stop = datetime_to_index(_stop, self.HSTMaster.earliest, 30)
+                _stop = datetime_to_index(_stop, self.HSTMaster.earliest, self.HSTMaster.samplePeriod)
 
             return slice(_start, _stop)
 
@@ -160,7 +160,7 @@ class HST(object):
             
             if isinstance(subscript, datetime.datetime):
 
-                return datetime_to_index(subscript, self.HSTMaster.earliest, 30)
+                return datetime_to_index(subscript, self.HSTMaster.earliest, self.HSTMaster.samplePeriod)
 
         return subscript
 

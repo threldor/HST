@@ -178,8 +178,8 @@ class HSTData(object):
         if 'pathMod' in kwargs:
             pathMod = kwargs.pop('pathMod') / self.filename.name
 
-            # copy header for multiprocessing
-            header_copy = copy(self.header)
+        # copy header for multiprocessing
+        header_copy = copy(self.header)
 
         for key, value in kwargs.items():
 
