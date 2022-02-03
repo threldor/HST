@@ -64,7 +64,11 @@ class HST(object):
             stop_index = (self.dataLength + subscript.stop) % self.dataLength if subscript.stop else None
 
             # ignore step
-            if subscript.stop is None:
+            if subscript.start is None and subscript.stop is None:
+
+                dataItems = self.get_HSTDataItems(1, self.dataLength - 1)
+
+            elif subscript.stop is None:
 
                 dataItems = self.get_HSTDataItems(start_index, self.dataLength - 1 - start_index)
 
@@ -193,6 +197,9 @@ if __name__ == '__main__':
 
     # load
     hst.load(inputFile)
+
+    print(hst[:].get_data())
+
 
     # <single file editing>
     # choose object

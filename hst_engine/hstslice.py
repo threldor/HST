@@ -67,9 +67,9 @@ class HSTSlice(object):
 
                 shutil.copyfile(HSTDataItem.filename, newPath)
 
-        self.start = start
+        self.start = start if start else 0
 
-        self.end = end
+        self.end = end if end else self.master.dataLength
 
     def __str__(self):
 

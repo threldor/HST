@@ -29,12 +29,48 @@ def scale_fast(data: List, old_min: int, old_max: int, new_min: int, new_max: in
 
 
 @jit(nopython=True)
-def scale_fast_2_byte(data: List, old_min: int, old_max: int, new_min: int, new_max: int):
-    return [(old_min * (d - 32_000) - old_max * d + 32_000 * new_min)/(new_min - new_max)
-            if d not in [-32001, -32002] else d
-            for d in data]
+def scale_fast_2_byte(data: List, old_min: int, old_max: int, new_min: int, new_max: int, inval: bool = True):
+    # if (d < 0 or d > 32_000) and inval:
+    #
+    #     if d < 0:
+    #         d = 0
+    #
+    #     else:
+    #
+    #
+    result = []
 
+    for d in data:
 
+        if d in [33_535, 33_534]:
+
+            #return d
+            result.append(d)
+            continue
+
+        scaled = (old_min * (d - 32_000) - old_max * d + 32_000 * new_min) / (new_min - new_max)
+
+        if scaled < 0 or scaled > 32_000:
+            if inval:
+                # return 33_535
+                result.append(33_535)
+                continue
+            else:
+                # return 0 if scaled < 0 else 32_000
+                result.append(0 if scaled < 0 else 32_000)
+                continue
+
+        #return scaled
+        result.append(scaled)
+
+    return result
+
+    # return [(old_min * (d - 32_000) - old_max * d + 32_000 * new_min) / (new_min - new_max)
+    #
+    #         if (d < 0 or d > 32_000) and not inval else (0 if d < 0 else 32_000)
+    #
+    # if d not in [33535, 33534] else d
+    #         for d in data]
 
 
 def scale(data, old_min, old_max, new_min, new_max):
@@ -97,5 +133,5 @@ if __name__ == '__main__':
           f'\nscale:\t{scale_min}-{scale_max}')
 
     print()
-    print('\t|\t'.join(['val    ', 'val_e_o',  'val_final']))
+    print('\t|\t'.join(['val    ', 'val_e_o', 'val_final']))
     print('\t->\t'.join([str(round(i, 2)) for i in [val, val_e_old, val_final]]))
