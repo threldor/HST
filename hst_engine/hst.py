@@ -150,15 +150,15 @@ class HST(object):
 
                 _start = datetime_to_index(_start, self.HSTMaster.earliest, self.HSTMaster.samplePeriod)
 
-                if _start not in range(0, self.dataLength):
-                    raise Exception(f'{subscript} not in valid range - index at {_start} of max {self.dataLength}')
+                # if _start not in range(0, self.dataLength):
+                #     raise Exception(f'{subscript} not in valid range - index at {_start} of max {self.dataLength}')
 
             if isinstance(_stop, datetime.datetime):
 
                 _stop = datetime_to_index(_stop, self.HSTMaster.earliest, self.HSTMaster.samplePeriod)
 
-                if _stop not in range(0, self.dataLength):
-                    raise Exception(f'{subscript} not in valid range - index at {_stop} of max {self.dataLength}')
+                # if _stop not in range(0, self.dataLength):
+                #     raise Exception(f'{subscript} not in valid range - index at {_stop} of max {self.dataLength}')
 
             return slice(_start, _stop)
 
@@ -168,8 +168,8 @@ class HST(object):
 
                 _index = datetime_to_index(subscript, self.HSTMaster.earliest, self.HSTMaster.samplePeriod)
 
-                if _index not in range(0, self.dataLength):
-                    raise Exception(f'{subscript} not in valid range - index at {_index} of max {self.dataLength}')
+                # if _index not in range(0, self.dataLength):
+                #     raise Exception(f'{subscript} not in valid range - index at {_index} of max {self.dataLength}')
 
                 return _index
 

@@ -26,7 +26,15 @@ def scale_fast(data: List, old_min: int, old_max: int, new_min: int, new_max: in
     return [((d - old_min) / (old_max - old_min)) * (new_max - new_min) + new_min
             if d not in [-32001, -32002] else d
             for d in data]
-    #todo(jaun) add the check here for valid/gated data
+
+
+@jit(nopython=True)
+def scale_fast_2_byte(data: List, old_min: int, old_max: int, new_min: int, new_max: int):
+    return [(old_min * (d - 32_000) - old_max * d + 32_000 * new_min)/(new_min - new_max)
+            if d not in [-32001, -32002] else d
+            for d in data]
+
+
 
 
 def scale(data, old_min, old_max, new_min, new_max):
@@ -36,11 +44,12 @@ def scale(data, old_min, old_max, new_min, new_max):
     """
     if isinstance(data, list) or isinstance(data, List):
 
-        return scale_fast(List(data), old_min, old_max, new_min, new_max)
+        return scale_fast_2_byte(List(data), old_min, old_max, new_min, new_max)
 
     else:
 
         return ((data - old_min) / (old_max - old_min)) * (new_max - new_min) + new_min
+
 
 def scale_triple(data, min_1, max_1, min_2, max_2, min_3, max_3):
     """
@@ -53,15 +62,40 @@ def scale_triple(data, min_1, max_1, min_2, max_2, min_3, max_3):
 
     return scale(data_new, min_2, max_2, min_3, max_3)
 
+
 def scale_triple_single_call(data, min_1, max_1, min_3, max_3):
     """
 
     :type data: object
     """
-    return [((min_3 - max_3)*(d - min_1)/(min_1 - max_1)) + min_3 for d in data]
+    return [((min_3 - max_3) * (d - min_1) / (min_1 - max_1)) + min_3 for d in data]
+
 
 if __name__ == '__main__':
+    # print(scale_triple([0, 5, 20, 50], 0, 100, -100, 100, 0, 1))
+    #
+    # print(scale_triple_single_call([0, 5, 20, 50], 0, 100, 0, 1))
 
-    print(scale_triple([0, 5, 20, 50], 0, 100, -100, 100, 0, 1))
+    # test
 
-    print(scale_triple_single_call([0, 5, 20, 50], 0, 100, 0, 1))
+    val = 12800
+
+    e_old_min, e_old_max = 0, 500
+
+    e_new_min, e_new_max = 0, 1000
+
+    scale_min, scale_max = 0, 32000
+
+    # scale to eng
+    val_e_old = scale(val, scale_min, scale_max, e_old_min, e_old_max)
+
+    # scale to scale
+    val_final = scale(val_e_old, e_new_min, e_new_max, scale_min, scale_max)
+
+    print(f'val:\t{val}\n'
+          f'engineer old:\t{e_old_min}-{e_old_max}\n'
+          f'\nscale:\t{scale_min}-{scale_max}')
+
+    print()
+    print('\t|\t'.join(['val    ', 'val_e_o',  'val_final']))
+    print('\t->\t'.join([str(round(i, 2)) for i in [val, val_e_old, val_final]]))
