@@ -193,7 +193,7 @@ class HSTData(object):
 
                     f.write(header_copy.tobytes())
 
-                    #f.flush()
+                    # f.flush()
 
             else:
 
@@ -292,6 +292,22 @@ class HSTData(object):
                 f.write(result)
 
             f.flush()
+
+
+    def byte_2_to_float(self):
+        """
+
+        :param count:
+        :type index: object
+        """
+
+
+        # change header
+        #self.header.dtype = header_data(6)
+        x = np.array(list(self.header), dtype=header_data(6))
+
+        # edit data
+
 
 
 if __name__ == '__main__':

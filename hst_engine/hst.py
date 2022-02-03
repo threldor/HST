@@ -198,12 +198,16 @@ if __name__ == '__main__':
     # load
     hst.load(inputFile)
 
-    print(hst[:].get_data())
+    #print(hst[:].get_data())
 
 
     # <single file editing>
     # choose object
     HST_10 = hst.HSTDataItems[10]
+
+
+
+    HST_10.byte_2_to_float()
 
     # modify header
     # as keyword args
