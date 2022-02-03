@@ -19,6 +19,7 @@ from pathlib import Path
 class Ui_Form(object):
 
     hst = None
+    data = []
 
     def setupUi(self, Form):
         Form.setObjectName("Form")
@@ -167,6 +168,7 @@ class Ui_Form(object):
         self.dateTimeEdit_end.dateChanged['QDate'].connect(self.calendarWidget_end.setSelectedDate)
 
         self.pushButton.clicked.connect(self.import_HST)
+        self.pushButton_2.clicked.connect(self.cent)
 
         QtCore.QMetaObject.connectSlotsByName(Form)
 
@@ -194,7 +196,8 @@ class Ui_Form(object):
 
         if self.radioButton.isChecked():
             print(self.lineEdit.text())
-            self.hst.repath = Path(self.lineEdit.text())   # todo edit
+            #self.hst.repath = Path(self.lineEdit.text())   # todo edit
+            self.hst.repath = Path('../resources/converted/2-byte')   # todo edit
 
         self.hst.load(fd.askopenfilename())
 
@@ -203,7 +206,38 @@ class Ui_Form(object):
 
     def load_data(self):
 
-        self.graph.addItem(pg.plot(self.hst[:].get_data()))
+        self.data = self.hst[:].get_data()[0]
+
+        self.graph.plot(self.data, name='plot')
+
+        self.graph_start.plot(self.data, name='plot')
+
+        self.graph_end.plot(self.data, name='plot')
+
+        self.graph.getPlotItem().items[0].sigPositionChangeFinished.connect(self.cent)
+        self.graph.getPlotItem().items[1].sigPositionChangeFinished.connect(self.cent)
+
+
+    def cent(self):
+
+        print('yes')
+
+        A = self.graph.getPlotItem().items[0]
+
+        B = self.graph.getPlotItem().items[1]
+
+        if A.x() > B.x():
+            self.graph_start.getPlotItem().items[0].setX(B.x())
+            self.graph_end.getPlotItem().items[0].setX(A.x())
+        else:
+            self.graph_start.getPlotItem().items[0].setX(A.x())
+            self.graph_end.getPlotItem().items[0].setX(B.x())
+
+        self.graph_start.setXRange(self.graph_start.getPlotItem().items[0].x() - 10,
+                                   self.graph_start.getPlotItem().items[0].x() + 10)
+
+        self.graph_end.setXRange(self.graph_end.getPlotItem().items[0].x() - 10,
+                                   self.graph_end.getPlotItem().items[0].x() + 10)
 
         # hst = HST()
         #
