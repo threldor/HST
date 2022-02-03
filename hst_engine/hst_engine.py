@@ -27,6 +27,8 @@ if __name__ == '__main__':
 
     _path = Path(_config['path'])
 
+    _drive = _config['drive']
+
 
     # -- 2-BYTE --
 
@@ -40,7 +42,7 @@ if __name__ == '__main__':
     # create a blank HST_one object to set the drive prior to loading
     hst = HST()
 
-    hst.drive = 'C'
+    hst.drive = _drive
 
     # repath to the following dir, this repath replaces the paths
     # within the HST_one
@@ -74,6 +76,8 @@ if __name__ == '__main__':
     # this can also be indexes based from the oldest file start
     # as the offset start - negative indexes allowed
     slice_dt = hst[start:end]
+
+    slice_dummy = hst[datetime.datetime(2021, 12, 12, 0, 4, 0)]
 
     # can now scale this section
     slice_dt.scale(0, 100, 0, 1000)
