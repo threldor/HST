@@ -30,14 +30,7 @@ def scale_fast(data: List, old_min: int, old_max: int, new_min: int, new_max: in
 
 @jit(nopython=True)
 def scale_fast_2_byte(data: List, old_min: int, old_max: int, new_min: int, new_max: int, inval: bool = True):
-    # if (d < 0 or d > 32_000) and inval:
-    #
-    #     if d < 0:
-    #         d = 0
-    #
-    #     else:
-    #
-    #
+
     result = []
 
     for d in data:

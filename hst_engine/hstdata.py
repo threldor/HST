@@ -228,9 +228,9 @@ class HSTData(object):
         n_min = int(n_min)
         n_max = int(n_max)
 
-        if self.bytes == 8:  # temp return on floats
-
-            return
+        # if self.bytes == 8:  # temp return on floats
+        #
+        #     return
 
         if pathMod is not None:
 
@@ -246,42 +246,42 @@ class HSTData(object):
 
                 data = [int.from_bytes(sample[k:k + self.bytes], 'little') for k in range(0, len(sample), self.bytes)]
 
-            else:
-
-                data = np.frombuffer(sample, dtype='float')
+            # else:
+            #
+            #     data = np.frombuffer(sample, dtype='float')
 
             scaled = [int(val) for val in scale(data, o_min, o_max, n_min, n_max)]
 
             result = []
 
-            if self.bytes == 2:
+            #if self.bytes == 2:
 
-                for val in scaled:
+            for val in scaled:
 
-                    val = 32767 if val > 32767 else val
+                #val = 32767 if val > 32767 else val
 
-                    # todo invalid or clamped ?
+                # todo invalid or clamped ?
 
-                    if clamped:
+                # if clamped:
+                #
+                #     if val > self.header['EngFull']:
+                #         val = self.header['EngFull']
+                #
+                #     if val < self.header['EngMin']:
+                #         val = self.header['EngMin']
+                #
+                # else:
+                #
+                #     if val > self.header['EngFull'] or val < self.header['EngZero']:
+                #         val = -32001
 
-                        if val > self.header['EngFull']:
-                            val = self.header['EngFull']
+                check = val.to_bytes(self.bytes, 'little', signed=False)
 
-                        if val < self.header['EngMin']:
-                            val = self.header['EngMin']
+                result.append(check)
 
-                    else:
-
-                        if val > self.header['EngFull'] or val < self.header['EngZero']:
-                            val = -32001
-
-                    check = val.to_bytes(self.bytes, 'little', signed=True)
-
-                    result.append(check)
-
-            else:
-
-                result = np.array(scaled).tobytes()
+            # else:
+            #
+            #     result = np.array(scaled).tobytes()
 
             f.seek(self.header.itemsize + index * self.bytes)
 
@@ -333,22 +333,22 @@ class HSTData(object):
 
             for val in scaled:
 
-                val = 32767 if val > 32767 else val
-
-                # todo invalid or clamped ?
-
-                if clamped:
-
-                    if val > self.header['EngFull']:
-                        val = self.header['EngFull']
-
-                    if val < self.header['EngMin']:
-                        val = self.header['EngMin']
-
-                else:
-
-                    if val > self.header['EngFull'] or val < self.header['EngZero']:
-                        val = -32001
+                # val = 32767 if val > 32767 else val
+                #
+                # # todo invalid or clamped ?
+                #
+                # if clamped:
+                #
+                #     if val > self.header['EngFull']:
+                #         val = self.header['EngFull']
+                #
+                #     if val < self.header['EngMin']:
+                #         val = self.header['EngMin']
+                #
+                # else:
+                #
+                #     if val > self.header['EngFull'] or val < self.header['EngZero']:
+                #         val = -32001
 
                 check = val.to_bytes(self.bytes, 'little', signed=True)
 
@@ -370,6 +370,8 @@ class HSTData(object):
 
             f.flush()
 
+
+
         # change header
 
         #self.header.dtype = header_data(6)
@@ -386,9 +388,6 @@ class HSTData(object):
             np.frombuffer()
 
             print()
-
-        # edit data
-        scale()
 
 
 
