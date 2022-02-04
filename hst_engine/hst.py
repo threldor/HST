@@ -186,7 +186,7 @@ if __name__ == '__main__':
     # setup the input file pointing to the HST_one file (master)
     #inputFile = Path('../resources/converted/2-byte/ST051DOS01FIT0780201acHi.HST')
     inputFile = Path(r'C:\Users\jaun.vanheerden\PycharmProjects\HST\resources\CleanHistory\TestTags2Byte_A'
-                     r'\TestTag5SecondsInDay.000')
+                     r'\TestTag5SecondsInDay.HST')
 
     # create a blank HST_one object to set the drive prior to loading
     hst = HST()

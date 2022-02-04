@@ -134,7 +134,7 @@ HEADER_8 = [('name', '|S272'),
 
 # data formats
 
-DATA_H_2v6 = [('title', '|S112'),
+DATA_H_2v6 = [('name', '|S112'),
               ('RawZero', np.single),
               ('RawFull', np.single),
               ('EngZero', np.single),
@@ -311,3 +311,10 @@ def data_format(v: int) -> list:
     }
 
     return switcher.get(v, None)
+
+
+if __name__ == "__main__":
+
+    x = np.empty(1, dtype=header_data(6))
+
+    print(x)

@@ -197,7 +197,8 @@ class Ui_Form(object):
         if self.radioButton.isChecked():
             print(self.lineEdit.text())
             #self.hst.repath = Path(self.lineEdit.text())   # todo edit
-            self.hst.repath = Path('../resources/converted/2-byte')   # todo edit
+            #self.hst.repath = Path('../resources/converted/2-byte')   # todo edit
+            self.hst.repath = Path(r'C:\Users\jaun.vanheerden\PycharmProjects\HST\resources\CleanHistory\TestTags2Byte_B')   # todo edit
 
         self.hst.load(fd.askopenfilename())
 
