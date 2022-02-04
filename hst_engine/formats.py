@@ -311,3 +311,10 @@ def data_format(v: int) -> list:
     }
 
     return switcher.get(v, None)
+
+
+if __name__ == "__main__":
+
+    x = np.empty(1, dtype=header_data(6))
+
+    print(x)

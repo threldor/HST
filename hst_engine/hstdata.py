@@ -242,7 +242,6 @@ class HSTData(object):
         #     return
 
         if pathMod is not None:
-
             pathMod = pathMod / self.filename.name
 
         with open(pathMod or self.filename, 'r+b') as f:
@@ -252,7 +251,6 @@ class HSTData(object):
             sample = f.read(self.bytes * count)
 
             if self.bytes == 2:
-
                 data = [int.from_bytes(sample[k:k + self.bytes], 'little') for k in range(0, len(sample), self.bytes)]
 
             # else:
@@ -263,11 +261,10 @@ class HSTData(object):
 
             result = []
 
-            #if self.bytes == 2:
+            # if self.bytes == 2:
 
             for val in scaled:
-
-                #val = 32767 if val > 32767 else val
+                # val = 32767 if val > 32767 else val
 
                 # todo invalid or clamped ?
 
@@ -304,10 +301,9 @@ class HSTData(object):
 
             f.flush()
 
-
     def byte_2_to_float(self,
-                   pathMod: Path = None,
-                   clamped: bool = False) -> None:
+                        pathMod: Path = None,
+                        clamped: bool = False) -> None:
         """
 
         :param count:
@@ -317,7 +313,6 @@ class HSTData(object):
         n_min = int(self.header['EngZero'])
         n_max = int(self.header['EngFull'])
 
-
         if pathMod is not None:
             pathMod = pathMod / self.filename.name
 
@@ -325,11 +320,11 @@ class HSTData(object):
 
             f.seek(self.header.itemsize + 0 * self.bytes)  # todo optional times 2 or times 8 dependant bytes
 
-            sample = f.read(self.bytes * self.header)
+            sample = f.read(self.bytes * self.header['dataLength'])
 
-            if self.bytes == 2:
+            # if self.bytes == 2:
 
-                data = [int.from_bytes(sample[k:k + self.bytes], 'little') for k in range(0, len(sample), self.bytes)]
+            data = [int.from_bytes(sample[k:k + self.bytes], 'little') for k in range(0, len(sample), self.bytes)]
 
             # else:
             #
@@ -339,9 +334,7 @@ class HSTData(object):
 
             result = []
 
-
             for val in scaled:
-
                 # val = 32767 if val > 32767 else val
                 #
                 # # todo invalid or clamped ?
@@ -379,27 +372,65 @@ class HSTData(object):
 
             f.flush()
 
-
-
         # change header
 
-        #self.header.dtype = header_data(6)
+        # self.header.dtype = header_data(6)
 
-        #x = np.array(list(self.header), dtype=header_data(6))
+        # x = np.array(list(self.header), dtype=header_data(6))
+
+        blank = np.empty(1, dtype=header_data(6))
+
+        blank["name"] = self.header["name"]
+        blank["RawZero"] = self.header["RawZero"]
+        blank["RawFull"] = self.header["RawFull"]
+        blank["EngZero"] = self.header["EngZero"]
+        blank["EngFull"] = self.header["EngFull"]
+        blank["ID"] = self.header["ID"]
+        blank["filetype"] = self.header["filetype"]
+        blank["version"] = 6
+        blank["startEvNo"] = self.header["startEvNo"]
+        blank["logName"] = self.header["logName"]
+        blank["mode"] = self.header["mode"]
+        blank["area"] = self.header["area"]
+        blank["priv"] = self.header["priv"]
+        blank["hystoryType"] = self.header["hystoryType"]
+        blank["samplePeriod"] = self.header["samplePeriod"]
+        blank["sEngUnits"] = self.header["sEngUnits"]
+        blank["format"] = self.header["format"]
+        blank["startTime"] = self.header["startTime"] * 1E7 - 11644473600
+        blank["endTime"] = self.header["endTime"] * 1E7 - 11644473600
+        blank["dataLength"] = self.header["dataLength"]
+        blank["filePointer"] = self.header["filePointer"]
+        blank["endEvNo"] = self.header["endEvNo"]
+        blank["alignment1"] = self.header["alignment1"]
 
 
-        for header, form in zip(self.header.dtype.names, header_data(6)):
+        with open(pathMod or self.filename, 'rb') as file:
+            contents = file.read()[self.header.itemsize:]
 
-            print(self.header[header], self.header[header].dtype, form)
+        with open(pathMod or self.filename, 'wb') as file:
+            file.write(blank.tobytes())
+            file.write(contents)
 
-            print(struct.unpack(self.header[header].dtype.str, self.header[header]))
 
-            np.frombuffer()
 
-            print()
+        # #blank[]
+        #
+        # for header, form in zip(self.header.dtype.names, header_data(6)):
+        #
+        #     # print(self.header[header], self.header[header].dtype, form)
+        #     print(f'blank["{header}"] = self.header["{header}"]') #, self.header[header].dtype, form)
+        #     #
+        #     # ee = np.array(self.header[header], dtype=form)
+        #     # print(struct.unpack(self.header[header].dtype.str, self.header[header]))
+        #     #
+        #     # np.frombuffer()
+        #     #
+        #     # print()
 
+    def modMasterData(self):
+        pass
 
 
 if __name__ == '__main__':
-
     pass

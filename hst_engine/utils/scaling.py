@@ -80,18 +80,19 @@ def scale(data, old_min, old_max, new_min, new_max):
         return ((data - old_min) / (old_max - old_min)) * (new_max - new_min) + new_min
 
 
-def scale_float(data, old_min, old_max, new_min, new_max):
+def scale_float(data, new_min, new_max):
     """
 
     :type data: object
     """
     if isinstance(data, list) or isinstance(data, List):
 
-        return scale_fast(List(data), old_min, old_max, new_min, new_max)
+        return scale_fast(List(data), 0, 32_000, new_min, new_max)
 
     else:
 
-        return ((data - old_min) / (old_max - old_min)) * (new_max - new_min) + new_min
+        return ((data - 0) / (32_000 - 0)) * (new_max - new_min) + new_min
+
 
 def scale_triple(data, min_1, max_1, min_2, max_2, min_3, max_3):
     """
