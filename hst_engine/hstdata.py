@@ -16,6 +16,7 @@ from utils.scaling import scale
 from functools import reduce
 import typing
 from copy import copy
+import struct
 
 __author__ = __maintainer__ = ["Jaun van Heerden"]
 __version__ = "1.0.0"
@@ -303,9 +304,17 @@ class HSTData(object):
 
 
         # change header
-        #self.header.dtype = header_data(6)
-        x = np.array(list(self.header), dtype=header_data(6))
 
+        #self.header.dtype = header_data(6)
+
+        #x = np.array(list(self.header), dtype=header_data(6))
+
+
+        for header, form in zip(self.header.dtype.names, header_data(6)):
+            print(self.header[header], self.header[header].dtype, form)
+
+            print(struct.unpack(self.header[header].dtype.str, self.header[header]))
+            print()
         # edit data
 
 
