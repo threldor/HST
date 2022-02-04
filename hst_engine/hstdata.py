@@ -12,7 +12,7 @@ from hstmaster import HSTMaster
 from utils.str_conversion import bytes_to_str
 from pprint import pprint
 import os
-from utils.scaling import scale
+from utils.scaling import scale, scale_float
 from functools import reduce
 import typing
 from copy import copy
@@ -233,6 +233,7 @@ class HSTData(object):
             return
 
         if pathMod is not None:
+
             pathMod = pathMod / self.filename.name
 
         with open(pathMod or self.filename, 'r+b') as f:
@@ -295,13 +296,79 @@ class HSTData(object):
             f.flush()
 
 
-    def byte_2_to_float(self):
+    def byte_2_to_float(self,
+                   pathMod: Path = None,
+                   clamped: bool = False) -> None:
         """
 
         :param count:
         :type index: object
         """
 
+        n_min = int(self.header['EngZero'])
+        n_max = int(self.header['EngFull'])
+
+
+        if pathMod is not None:
+            pathMod = pathMod / self.filename.name
+
+        with open(pathMod or self.filename, 'r+b') as f:
+
+            f.seek(self.header.itemsize + 0 * self.bytes)  # todo optional times 2 or times 8 dependant bytes
+
+            sample = f.read(self.bytes * self.header)
+
+            if self.bytes == 2:
+
+                data = [int.from_bytes(sample[k:k + self.bytes], 'little') for k in range(0, len(sample), self.bytes)]
+
+            # else:
+            #
+            #     data = np.frombuffer(sample, dtype='float')
+
+            scaled = [int(val) for val in scale_float(data, n_min, n_max)]
+
+            result = []
+
+
+            for val in scaled:
+
+                val = 32767 if val > 32767 else val
+
+                # todo invalid or clamped ?
+
+                if clamped:
+
+                    if val > self.header['EngFull']:
+                        val = self.header['EngFull']
+
+                    if val < self.header['EngMin']:
+                        val = self.header['EngMin']
+
+                else:
+
+                    if val > self.header['EngFull'] or val < self.header['EngZero']:
+                        val = -32001
+
+                check = val.to_bytes(self.bytes, 'little', signed=True)
+
+                result.append(check)
+
+            # else:
+            #
+            #     result = np.array(scaled).tobytes()
+
+            f.seek(self.header.itemsize + 0 * self.bytes)
+
+            if type(result) is not bytes:
+
+                f.write(reduce(lambda x, y: x + y, result))
+
+            else:
+
+                f.write(result)
+
+            f.flush()
 
         # change header
 
@@ -311,13 +378,20 @@ class HSTData(object):
 
 
         for header, form in zip(self.header.dtype.names, header_data(6)):
+
             print(self.header[header], self.header[header].dtype, form)
 
             print(struct.unpack(self.header[header].dtype.str, self.header[header]))
+
+            np.frombuffer()
+
             print()
+
         # edit data
+        scale()
 
 
 
 if __name__ == '__main__':
+
     pass
