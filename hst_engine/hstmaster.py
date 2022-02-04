@@ -16,6 +16,7 @@ import datetime
 from pathlib import Path
 import numpy as np
 import os
+from copy import copy
 
 
 class HSTMaster(object):
@@ -70,6 +71,45 @@ class HSTMaster(object):
     def __getitem__(self, key: str):
 
         return self.header[key]
+
+
+    def modHSTDataItem(self, index: int, *args, **kwargs: dict) -> None:
+
+        for arg in args:
+
+            if isinstance(arg, tuple):
+                for element in arg:
+                    kwargs.update(element)
+            else:
+
+                kwargs.update(arg)
+
+        pathMod = None
+
+        if 'pathMod' in kwargs:
+            pathMod = kwargs.pop('pathMod') / self.filename.name
+
+        # copy header for multiprocessing
+        HSTDataItem_copy = copy(self.data[index])
+
+        for key, value in kwargs.items():
+
+            if key in HSTDataItem_copy.dtype.names:
+
+                HSTDataItem_copy[key] = value
+
+                with open(pathMod or self.filename, 'r+b') as f:
+
+                    f.seek(self.header.itemsize + index * HSTDataItem_copy.itemsize)
+
+                    f.write(HSTDataItem_copy.tobytes())
+
+                    # f.flush()
+
+            else:
+
+                print(f'{key} not in header')
+
 
 
 if __name__ == '__main__':

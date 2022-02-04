@@ -201,6 +201,8 @@ if __name__ == '__main__':
     # load
     hst.load(inputFile)
 
+    hst.HSTMaster.modHSTDataItem(2, mode=3)
+
     #print(hst[:].get_data())
 
 
