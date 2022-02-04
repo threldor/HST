@@ -24,7 +24,7 @@ def scale_fast(data: List, old_min: int, old_max: int, new_min: int, new_max: in
     :param data: List
     """
     return [((d - old_min) / (old_max - old_min)) * (new_max - new_min) + new_min
-            if d not in [-32001, -32002] else d
+            if d not in [33535, 33534] else d  #-32001 is 33535 and -32002 is 33534
             for d in data]
 
 

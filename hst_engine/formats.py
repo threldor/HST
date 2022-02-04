@@ -134,7 +134,7 @@ HEADER_8 = [('name', '|S272'),
 
 # data formats
 
-DATA_H_2v6 = [('title', '|S112'),
+DATA_H_2v6 = [('name', '|S112'),
               ('RawZero', np.single),
               ('RawFull', np.single),
               ('EngZero', np.single),

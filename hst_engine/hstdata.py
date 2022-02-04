@@ -157,6 +157,15 @@ class HSTData(object):
 
         self.span = range(_spanIndex, _spanIndex + self.master.dataLengthSegment - 1)
 
+    def offsetTime(self, offset: int, pathMod: Path = None) -> None:
+        """
+        Offset the startTime and endTime
+
+        :param offset:
+        :return:
+        """
+        self.modHeader({'pathMod': pathMod}, startTime=self.header['startTime']+offset, endTime=self.header['endTime']+offset)
+
     def modHeader(self, *args, **kwargs: dict) -> None:
         """
         :param pathMod:
