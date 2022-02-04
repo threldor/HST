@@ -103,6 +103,18 @@ class HSTSlice(object):
                                    n_max,
                                    self.resultPath)
 
+    def offsetTime(self, offset: int) -> None:
+        """
+        Offset the startTime and endTime
+
+        :param offset:
+        :return:
+        """
+
+        for HSTDataItem in self.HSTDataItems:
+            HSTDataItem.offsetTime(offset, self.resultPath)
+
+
     def modHeader(self, *args, **kwargs):
         """
 
