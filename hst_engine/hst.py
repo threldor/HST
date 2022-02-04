@@ -159,7 +159,7 @@ class HST(object):
 
             if isinstance(_stop, datetime.datetime):
 
-                _stop = datetime_to_index(_stop, self.HSTMaster.earliest, self.HSTMaster.samplePeriod)
+                _stop = datetime_to_index(_stop, self.HSTMaster.earliest, self.HSTMaster.samplePeriod) + 1
 
                 # if _stop not in range(0, self.dataLength):
                 #     raise Exception(f'{subscript} not in valid range - index at {_stop} of max {self.dataLength}')
