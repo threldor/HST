@@ -73,6 +73,45 @@ class HSTMaster(object):
         return self.header[key]
 
 
+    def modHSTDataItems(self, *args, **kwargs: dict) -> None:
+
+        for arg in args:
+
+            if isinstance(arg, tuple):
+                for element in arg:
+                    kwargs.update(element)
+            else:
+
+                kwargs.update(arg)
+
+        pathMod = None
+
+        if 'pathMod' in kwargs:
+            pathMod = kwargs.pop('pathMod') / self.filename.name
+
+
+        with open(pathMod or self.filename, 'r+b') as f:
+
+            f.seek(self.header.itemsize)
+
+            buffer = b''
+
+            for index, data in enumerate(self.data):
+
+                for key, value in kwargs.items():
+
+                    if key in data.dtype.names:
+
+                        data[key] = value
+
+                buffer += data.tobytes()
+
+            f.write(buffer)
+
+                    # f.flush()
+
+
+
     def modHSTDataItem(self, index: int, *args, **kwargs: dict) -> None:
 
         for arg in args:
