@@ -164,7 +164,8 @@ class HSTData(object):
         :param offset:
         :return:
         """
-        self.modHeader({'pathMod': pathMod}, startTime=self.header['startTime']+offset, endTime=self.header['endTime']+offset)
+        self.modHeader({'pathMod': pathMod}, startTime=self.header['startTime'] + offset,
+                       endTime=self.header['endTime'] + offset)
 
     def modHeader(self, *args, **kwargs: dict) -> None:
         """
@@ -404,29 +405,12 @@ class HSTData(object):
         blank["endEvNo"] = self.header["endEvNo"]
         blank["alignment1"] = self.header["alignment1"]
 
-
         with open(pathMod or self.filename, 'rb') as file:
             contents = file.read()[self.header.itemsize:]
 
         with open(pathMod or self.filename, 'wb') as file:
             file.write(blank.tobytes())
             file.write(contents)
-
-
-
-        # #blank[]
-        #
-        # for header, form in zip(self.header.dtype.names, header_data(6)):
-        #
-        #     # print(self.header[header], self.header[header].dtype, form)
-        #     print(f'blank["{header}"] = self.header["{header}"]') #, self.header[header].dtype, form)
-        #     #
-        #     # ee = np.array(self.header[header], dtype=form)
-        #     # print(struct.unpack(self.header[header].dtype.str, self.header[header]))
-        #     #
-        #     # np.frombuffer()
-        #     #
-        #     # print()
 
     def modMasterData(self):
         pass

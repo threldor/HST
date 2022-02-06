@@ -10,7 +10,7 @@ __email__ = ["jaun.vanheerden@allianceautomation.com.au"]
 __status__ = "Production"
 
 # imports
-from numba import jit
+from numba import njit, jit
 from numba.typed import List
 
 
@@ -26,6 +26,74 @@ def scale_fast(data: List, old_min: int, old_max: int, new_min: int, new_max: in
     return [((d - old_min) / (old_max - old_min)) * (new_max - new_min) + new_min
             if d not in [33535, 33534] else d  #-32001 is 33535 and -32002 is 33534
             for d in data]
+
+
+
+@njit(fastmath=True)
+def scale_fast_2_byte_faster(data: List, old_min: int, old_max: int, new_min: int, new_max: int, inval: bool = True):
+    result = List()
+
+    for d in data:
+
+        if d in List([33_535, 33_534]):
+
+            #return d
+            result.append(d)
+            continue
+
+        scaled = (old_min * (d - 32_000) - old_max * d + 32_000 * new_min) / (new_min - new_max)
+
+        if scaled < 0 or scaled > 32_000:
+            if inval:
+                # return 33_535
+                result.append(33_535)
+                continue
+            else:
+                # return 0 if scaled < 0 else 32_000
+                result.append(0 if scaled < 0 else 32_000)
+                continue
+
+        #return scaled
+        result.append(int(scaled))
+
+    return result
+
+@njit()
+def scale_fast_2_byte_listcomp(data: List, old_min: int, old_max: int, new_min: int, new_max: int, inval: bool = True):
+
+    return [(old_min * (d - 32_000) - old_max * d + 32_000 * new_min) / (new_min - new_max) for d in data]
+
+def scale_fast_2_byte_listcomp_slow(data: List, old_min: int, old_max: int, new_min: int, new_max: int,
+                               inval: bool = True):
+    return [(old_min * (d - 32_000) - old_max * d + 32_000 * new_min) / (new_min - new_max) for d in data]
+
+
+    # result = List()
+    #
+    # for d in data:
+    #
+    #     if d in List([33_535, 33_534]):
+    #
+    #         #return d
+    #         result.append(d)
+    #         continue
+    #
+    #     scaled = (old_min * (d - 32_000) - old_max * d + 32_000 * new_min) / (new_min - new_max)
+    #
+    #     if scaled < 0 or scaled > 32_000:
+    #         if inval:
+    #             # return 33_535
+    #             result.append(33_535)
+    #             continue
+    #         else:
+    #             # return 0 if scaled < 0 else 32_000
+    #             result.append(0 if scaled < 0 else 32_000)
+    #             continue
+    #
+    #     #return scaled
+    #     result.append(int(scaled))
+    #
+    # return result
 
 
 @jit(nopython=True)
@@ -115,9 +183,6 @@ def scale_triple_single_call(data, min_1, max_1, min_3, max_3):
 
 
 if __name__ == '__main__':
-    # print(scale_triple([0, 5, 20, 50], 0, 100, -100, 100, 0, 1))
-    #
-    # print(scale_triple_single_call([0, 5, 20, 50], 0, 100, 0, 1))
 
     # test
 
@@ -129,16 +194,7 @@ if __name__ == '__main__':
 
     scale_min, scale_max = 0, 32000
 
-    # scale to eng
-    val_e_old = scale(val, scale_min, scale_max, e_old_min, e_old_max)
 
-    # scale to scale
-    val_final = scale(val_e_old, e_new_min, e_new_max, scale_min, scale_max)
+    # timeit
 
-    print(f'val:\t{val}\n'
-          f'engineer old:\t{e_old_min}-{e_old_max}\n'
-          f'\nscale:\t{scale_min}-{scale_max}')
 
-    print()
-    print('\t|\t'.join(['val    ', 'val_e_o', 'val_final']))
-    print('\t->\t'.join([str(round(i, 2)) for i in [val, val_e_old, val_final]]))
