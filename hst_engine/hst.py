@@ -108,7 +108,7 @@ class HST(object):
 
         self.HSTMaster = HSTMaster(self, self.filename)
 
-        self.HSTDataItems = [HSTData(self.HSTMaster, data) for data in self.HSTMaster.data]
+        self.HSTDataItems = [HSTData(self.HSTMaster, data, index) for index, data in zip(self.HSTMaster.data_index, self.HSTMaster.data)]
 
         # get the data length segment from the first HSTData item - assume all are the same #todo check this
         self.dataLengthSegment = self.HSTDataItems[0].masterItem['dataLength']
@@ -154,15 +154,9 @@ class HST(object):
 
                 _start = datetime_to_index(_start, self.HSTMaster.earliest, self.HSTMaster.samplePeriod)
 
-                # if _start not in range(0, self.dataLength):
-                #     raise Exception(f'{subscript} not in valid range - index at {_start} of max {self.dataLength}')
-
             if isinstance(_stop, datetime.datetime):
 
                 _stop = datetime_to_index(_stop, self.HSTMaster.earliest, self.HSTMaster.samplePeriod) + 1
-
-                # if _stop not in range(0, self.dataLength):
-                #     raise Exception(f'{subscript} not in valid range - index at {_stop} of max {self.dataLength}')
 
             return slice(_start, _stop)
 
@@ -171,9 +165,6 @@ class HST(object):
             if isinstance(subscript, datetime.datetime):
 
                 _index = datetime_to_index(subscript, self.HSTMaster.earliest, self.HSTMaster.samplePeriod)
-
-                # if _index not in range(0, self.dataLength):
-                #     raise Exception(f'{subscript} not in valid range - index at {_index} of max {self.dataLength}')
 
                 return _index
 
