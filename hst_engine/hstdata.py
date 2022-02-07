@@ -36,7 +36,7 @@ class HSTData(object):
 
         self.masterItem = masterItem
 
-        self.index = index
+        self.index: typing.Union[int, None] = index
 
         _spandex = self.index * self.master.dataLengthSegment  # span + index = spandex (lol)
 
@@ -45,8 +45,6 @@ class HSTData(object):
         self.dt_header = np.dtype(header_data(masterItem['version']))
 
         self.filename: Path = Path(bytes_to_str(self.masterItem['name']))
-
-        self.index: typing.Union[int, None] = None
 
         #self.span: typing.Union[range, None] = None
 
@@ -205,7 +203,7 @@ class HSTData(object):
         # update the data files
         self.modHeader({'pathMod': pathMod}, startTime=st, endTime=et)
 
-        # update the HST
+        # update the HST # todo here james
         self.master.modHSTDataItem(self.index, {'pathMod': pathMod}, startTime=st, endTime=et)
 
 

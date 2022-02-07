@@ -41,14 +41,14 @@ class HSTMaster(object):
 
         self.dt_data = np.dtype(header_HST(self.header['version']))
 
-        self.data = np.fromfile(self.filename,
+        self.data_original = np.fromfile(self.filename,
                                 dtype=self.dt_data,
                                 count=self.header['nFiles'],
                                 offset=self.dt_header.itemsize)
 
-        self.data = self.data[np.apply_along_axis(lambda x: x['startTime'],
+        self.data = self.data_original[np.apply_along_axis(lambda x: x['startTime'],
                                                   axis=0,
-                                                  arr=self.data).argsort()]
+                                                  arr=self.data_original).argsort()]
 
         self.data_index = np.apply_along_axis(lambda x: x['startTime'],
                                               axis=0,
@@ -65,13 +65,23 @@ class HSTMaster(object):
 
         self.samplePeriod = int(self.data['samplePeriod'][0] / 1000)
 
-        try:
 
+        try:
+            # 2 byte
             self.earliest = datetime.datetime.utcfromtimestamp(min(self.data['startTime']))
 
         except:
+            # 8 byte
+            self.earliest = datetime.datetime.utcfromtimestamp(int((min(self.data['startTime']) / 1E7)) - 11_644_473_600)
 
-            self.earliest = datetime.datetime.utcfromtimestamp(int(min(self.data['startTime']) / 100000000))
+        try:
+            # 2 byte
+            self.latest = datetime.datetime.utcfromtimestamp(max(self.data['endTime']))
+
+        except:
+            # 8 byte
+            self.latest = datetime.datetime.utcfromtimestamp(int((max(self.data['endTime']) / 1E7)) - 11_644_473_600)
+
 
     def __len__(self) -> int:
 
@@ -144,7 +154,7 @@ class HSTMaster(object):
 
             buffer = b''
 
-            for index, data in enumerate(self.data):
+            for index, data in enumerate(self.data_original[::-1]):
 
                 for key, value in kwargs.items():
 
@@ -181,7 +191,7 @@ class HSTMaster(object):
             pathMod = kwargs.pop('pathMod') / self.filename.name
 
         # copy header for multiprocessing
-        HSTDataItem_copy = copy(self.data[index])
+        HSTDataItem_copy = copy(self.data_original[index])
 
         for key, value in kwargs.items():
 
@@ -191,7 +201,7 @@ class HSTMaster(object):
 
                 with open(pathMod or self.filename, 'r+b') as f:
 
-                    f.seek(self.header.itemsize + index * HSTDataItem_copy.itemsize)
+                    f.seek(self.header.itemsize + (index * HSTDataItem_copy.itemsize))
 
                     f.write(HSTDataItem_copy.tobytes())
 
