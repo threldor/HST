@@ -14,7 +14,7 @@ import os
 from utils.scaling import scale, scale_float
 import typing
 from copy import copy
-
+import shutil
 
 __author__ = __maintainer__ = ["Jaun van Heerden"]
 __version__ = "1.0.0"
@@ -24,17 +24,23 @@ __status__ = "Production"
 
 # noinspection PyTypeChecker
 class HSTData(object):
+    """
 
+    """
     def __init__(self,
                  master: HSTMaster,
                  masterItem: np.void,
                  index: int) -> None:
 
-        self.index = index
-
         self.master = master
 
         self.masterItem = masterItem
+
+        self.index = index
+
+        _spandex = self.index * self.master.dataLengthSegment  # span + index = spandex (lol)
+
+        self.span = range(_spandex, _spandex + self.master.dataLengthSegment - 1)
 
         self.dt_header = np.dtype(header_data(masterItem['version']))
 
@@ -42,7 +48,7 @@ class HSTData(object):
 
         self.index: typing.Union[int, None] = None
 
-        self.span: typing.Union[range, None] = None
+        #self.span: typing.Union[range, None] = None
 
         self.header = None
 
@@ -84,7 +90,8 @@ class HSTData(object):
 
             if start_index > stop_index:
 
-                _start = self.get_data(start_index, self.masterItem['dataLength'] - 1 - start_index)
+                _start = self.get_data(start_index,
+                                       self.masterItem['dataLength'] - 1 - start_index)
 
                 _stop = self.get_data(1, stop_index)
 
@@ -92,7 +99,8 @@ class HSTData(object):
 
             else:
 
-                data = self.get_data(start_index, stop_index - start_index)
+                data = self.get_data(start_index,
+                                     stop_index - start_index)
 
             return data
 
@@ -169,20 +177,21 @@ class HSTData(object):
 
         return data
 
-    def set_index(self, index: int) -> None:
-        """sets the relative index based on the order within the `HSTDataItems` list
-        :type index: object
-        """
-        self.index = index
-
-        _spanIndex = self.index * self.master.dataLengthSegment
-
-        self.span = range(_spanIndex, _spanIndex + self.master.dataLengthSegment - 1)
+    # def set_index(self, index: int) -> None:
+    #     """sets the relative index based on the order within the `HSTDataItems` list
+    #     :type index: object
+    #     """
+    #     self.index = index
+    #
+    #     _spanIndex = self.index * self.master.dataLengthSegment
+    #
+    #     self.span = range(_spanIndex, _spanIndex + self.master.dataLengthSegment - 1)
 
     def offsetTime(self, offset: int, pathMod: Path = None) -> None:
         """
         Offset the startTime and endTime
 
+        :param pathMod:
         :param offset:
         :return:
         """
@@ -260,6 +269,7 @@ class HSTData(object):
         n_min = int(n_min)
         n_max = int(n_max)
 
+
         if pathMod is not None:
             pathMod = pathMod / self.filename.name
 
@@ -291,12 +301,10 @@ class HSTData(object):
                        RawZero=n_min,
                        RawFull=n_max)
 
-    def to_float(self,
-                pathMod: Path = None) -> None:
+    def to_float(self, pathMod: Path = None) -> None:
         """
+        :param pathMod:
 
-        :param count:
-        :type index: object
         """
 
         n_min = int(self.header['EngZero'])
@@ -314,8 +322,8 @@ class HSTData(object):
 
             scaled = scale_float(data, n_min, n_max)
 
-            result = [val.to_bytes(self.bytes, 'little', signed=False)
-                      for val in scaled.tolist()]
+            result = [int(val).to_bytes(self.bytes, 'little', signed=False)
+                      for val in scaled]
 
             f.seek(self.header.itemsize + 0 * self.bytes)
 

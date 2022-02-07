@@ -92,6 +92,8 @@ if __name__ == '__main__':
 
     #V = slice_dt.get_data()
 
+    hst.to_float()
+
 
     profiler.disable()
     stats = pstats.Stats(profiler).sort_stats('cumtime')

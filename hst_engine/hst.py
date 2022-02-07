@@ -120,8 +120,9 @@ class HST(object):
 
         self.dataLength = self.dataLengthSegment * len(self.HSTDataItems)
 
-        for index, HSTDataItem in enumerate(self.HSTDataItems):
-            HSTDataItem.set_index(index)
+        # for index, HSTDataItem in enumerate(self.HSTDataItems):
+        #     HSTDataItem.set_index(index)
+
 
     def get_HSTDataItems(self, start_index: int, count: int = 1):
         """
@@ -141,6 +142,7 @@ class HST(object):
         else:
 
             return [self.HSTDataItems[startIndex]]
+
 
     def subscript_process(self, subscript: typing.Union[datetime.datetime, slice]):
         """x
@@ -169,6 +171,7 @@ class HST(object):
 
         return subscript
 
+
     def to_float(self):
         """
 
@@ -185,26 +188,26 @@ class HST(object):
         for data in self.HSTMaster.data:
             blank = np.empty(1, dtype=header_HST(6))
 
-            blank["name"] = data.header["name"]
-            blank["ID"] = data.header["ID"]
-            blank["filetype"] = data.header["filetype"]
+            blank["name"] = data["name"]
+            blank["ID"] = data["ID"]
+            blank["filetype"] = data["filetype"]
             blank["version"] = 6
-            blank["startEvNo"] = data.header["startEvNo"]
-            blank["alignment1"] = data.header["alignment1"]
-            blank["logName"] = data.header["logName"]
-            blank["mode"] = data.header["mode"]
-            blank["area"] = data.header["area"]
-            blank["priv"] = data.header["priv"]
-            blank["hystoryType"] = data.header["hystoryType"]
-            blank["samplePeriod"] = data.header["samplePeriod"]
-            blank["sEngUnits"] = data.header["sEngUnits"]
-            blank["format"] = data.header["format"]
-            blank["startTime"] = data.header["startTime"] * 1E7 - 11644473600
-            blank["endTime"] = data.header["endTime"] * 1E7 - 11644473600
-            blank["dataLength"] = data.header["dataLength"]
-            blank["filePointer"] = data.header["filePointer"]
-            blank["endEvNo"] = data.header["endEvNo"]
-            blank["alignment2"] = data.header["alignment2"]
+            blank["startEvNo"] = data["startEvNo"]
+            blank["alignment1"] = data["alignment1"]
+            blank["logName"] = data["logName"]
+            blank["mode"] = data["mode"]
+            blank["area"] = data["area"]
+            blank["priv"] = data["priv"]
+            blank["hystoryType"] = data["hystoryType"]
+            blank["samplePeriod"] = data["samplePeriod"]
+            blank["sEngUnits"] = data["sEngUnits"]
+            blank["format"] = data["format"]
+            blank["startTime"] = data["startTime"] * 1E7 - 11644473600
+            blank["endTime"] = data["endTime"] * 1E7 - 11644473600
+            blank["dataLength"] = data["dataLength"]
+            blank["filePointer"] = data["filePointer"]
+            blank["endEvNo"] = data["endEvNo"]
+            blank["alignment2"] = data["alignment1"]
 
             contents.append(blank)
 

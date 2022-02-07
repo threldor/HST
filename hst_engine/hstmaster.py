@@ -92,12 +92,10 @@ class HSTMaster(object):
         """
 
         for arg in args:
-
             if isinstance(arg, tuple):
                 for element in arg:
                     kwargs.update(element)
             else:
-
                 kwargs.update(arg)
 
         pathMod = None
@@ -116,7 +114,6 @@ class HSTMaster(object):
             f.seek(0)
 
             f.write(self.header.tobytes())
-
 
 
     def modHSTDataItems(self, *args, **kwargs: dict) -> None:

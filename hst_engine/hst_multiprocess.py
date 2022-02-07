@@ -24,25 +24,21 @@ from itertools import groupby
 
 
 class HST_Multi:
-
     functions = {'MOD': 'modHeader',
-                 'SCL': 'scale'}
+                 'SCL': 'scale',
+                 'B2F': 'to_float',
+                 'OFS': 'offsetTime',
+                 'OFST': 'offsetToToday',
+                 'MOD_MAST_H': 'modMasterHST',
+                 'MOD_MAST_D': 'modMasterHSTDataItem',
+                 'MOD_MAST_D+': 'modMasterHSTDataItems'}
 
     def __init__(self):
         self.HSTs = []
 
     def run(self):
         with Pool(cpu_count()) as p:
-            #p.map(process, self.HSTs)
             tqdm.tqdm(p.map(process, self.HSTs), total=len(self.HSTs))
-        # for h in self.HSTs:
-        #     self.process(h)
-
-    def process(self, hst):
-        for script in hst:
-            script.execute()
-
-
 
     def csv_script(self, csv_file, repath: Path = None, drive: str = None):
 
@@ -54,8 +50,6 @@ class HST_Multi:
 
                 filename, *timeslices = [line.strip() for line in scriptLine.split(',?')]
 
-                print(filename)
-
                 # create a HST object
                 hst = HST(filename, repath, drive)
 
@@ -66,10 +60,6 @@ class HST_Multi:
                     startTime, endTime = map(lambda x: datetime.datetime.strptime(x, "%d/%m/%Y:%H:%M"),
                                              timeSpan.split(','))
 
-                    print()
-
-                    print(startTime, endTime)
-
                     # create the slice
 
                     hstslice = hst[startTime:endTime]
@@ -77,7 +67,6 @@ class HST_Multi:
                     commands = []
 
                     for command_s in commands_s:
-
                         function, *args = command_s.split(',')
 
                         function = self.functions[function]
@@ -92,9 +81,11 @@ class HST_Multi:
 
                 self.HSTs.append(hst_group)
 
+
 def process(hst):
     for script in hst:
         script.execute()
+
 
 # main
 if __name__ == '__main__':
@@ -109,6 +100,5 @@ if __name__ == '__main__':
     # for script in hstm.scripts:
     #
     #     script.execute()
-
 
     hstm.run()

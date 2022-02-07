@@ -16,7 +16,7 @@ import numpy as np
 
 
 @jit(nopython=True)
-def scale_fast(data: List, old_min: int, old_max: int, new_min: int, new_max: int):
+def scale_fast(data: np.array, old_min: int, old_max: int, new_min: int, new_max: int):
     """fast scaling of a list of data between two ranges
     :param new_max:
     :param new_min:
@@ -25,7 +25,7 @@ def scale_fast(data: List, old_min: int, old_max: int, new_min: int, new_max: in
     :param data: List
     """
     return [((d - old_min) / (old_max - old_min)) * (new_max - new_min) + new_min
-            if d not in [33535, 33534] else d  #-32001 is 33535 and -32002 is 33534
+            if d not in [33535, 33534] else d
             for d in data]
 
 
@@ -130,7 +130,7 @@ def scale_float(data, new_min, new_max):
     """
     if isinstance(data, list) or isinstance(data, List):
 
-        return scale_fast(List(data), 0, 32_000, new_min, new_max)
+        return scale_fast(np.array(data), 0, 32_000, new_min, new_max)
 
     else:
 
