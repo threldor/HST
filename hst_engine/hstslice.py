@@ -201,3 +201,18 @@ class HSTSlice(object):
 
     def modMasterHSTDataItems(self, *args, **kwargs):
         self.master.modHSTDataItems(args, kwargs)
+
+
+
+    def set_data(self, data: list):
+        """
+
+        :param data:
+        :return:
+        """
+
+        for HSTDataItem in self.HSTDataItems:
+            index, count = self.index_count(HSTDataItem)
+            values = data[:count]
+            data = data[count:]
+            HSTDataItem.set_data(index, values, self.resultPath)
