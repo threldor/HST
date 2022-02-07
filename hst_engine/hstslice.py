@@ -13,8 +13,6 @@ from hstmaster import HSTMaster
 from hstdata import HSTData
 import shutil
 import os
-import numpy as np
-from numba import jit
 
 __author__ = __maintainer__ = ["Jaun van Heerden"]
 __version__ = "1.0.0"

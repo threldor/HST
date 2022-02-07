@@ -9,7 +9,6 @@ __version__ = "1.0.0"
 __email__ = ["jaun.vanheerden@allianceautomation.com.au"]
 __status__ = "Production"
 
-
 # imports
 from formats import MASTER_H, header_HST
 import datetime
@@ -20,6 +19,9 @@ from copy import copy
 
 
 class HSTMaster(object):
+    """
+
+    """
 
     def __init__(self, parent, filename: Path) -> None:
         """
@@ -33,7 +35,9 @@ class HSTMaster(object):
 
         self.dt_header = np.dtype(MASTER_H)
 
-        self.header = np.fromfile(self.filename, dtype=self.dt_header, count=1)[0]
+        self.header = np.fromfile(self.filename,
+                                  dtype=self.dt_header,
+                                  count=1)[0]
 
         self.dt_data = np.dtype(header_HST(self.header['version']))
 
@@ -42,7 +46,13 @@ class HSTMaster(object):
                                 count=self.header['nFiles'],
                                 offset=self.dt_header.itemsize)
 
-        self.data = self.data[np.apply_along_axis(lambda x: x['startTime'], axis=0, arr=self.data).argsort()]
+        self.data = self.data[np.apply_along_axis(lambda x: x['startTime'],
+                                                  axis=0,
+                                                  arr=self.data).argsort()]
+
+        self.data_index = np.apply_along_axis(lambda x: x['startTime'],
+                                              axis=0,
+                                              arr=self.data).argsort()
 
         # set the data segment and data length (choose first) # todo check no inconsistencies
         self.dataLengthSegment = self.data['dataLength'][0]
@@ -53,7 +63,7 @@ class HSTMaster(object):
 
         self.filePointer = self.data[self.filePointerRef]['filePointer']
 
-        self.samplePeriod = int(self.data['samplePeriod'][0]/1000)
+        self.samplePeriod = int(self.data['samplePeriod'][0] / 1000)
 
         try:
 
@@ -61,8 +71,7 @@ class HSTMaster(object):
 
         except:
 
-            self.earliest = datetime.datetime.utcfromtimestamp(int(min(self.data['startTime'])/100000000))
-
+            self.earliest = datetime.datetime.utcfromtimestamp(int(min(self.data['startTime']) / 100000000))
 
     def __len__(self) -> int:
 
@@ -73,7 +82,14 @@ class HSTMaster(object):
         return self.header[key]
 
 
-    def modHSTDataItems(self, *args, **kwargs: dict) -> None:
+
+    def modHSTHeader(self, *args, **kwargs: dict) -> None:
+        """
+
+        :param args:
+        :param kwargs:
+        :return:
+        """
 
         for arg in args:
 
@@ -89,6 +105,41 @@ class HSTMaster(object):
         if 'pathMod' in kwargs:
             pathMod = kwargs.pop('pathMod') / self.filename.name
 
+        for key, value in kwargs.items():
+
+            if key in self.header.dtype.names:
+
+                self.header[key] = value
+
+        with open(pathMod or self.filename, 'r+b') as f:
+
+            f.seek(0)
+
+            f.write(self.header.tobytes())
+
+
+
+    def modHSTDataItems(self, *args, **kwargs: dict) -> None:
+        """
+
+        :param args:
+        :param kwargs:
+        :return:
+        """
+
+        for arg in args:
+
+            if isinstance(arg, tuple):
+                for element in arg:
+                    kwargs.update(element)
+            else:
+
+                kwargs.update(arg)
+
+        pathMod = None
+
+        if 'pathMod' in kwargs:
+            pathMod = kwargs.pop('pathMod') / self.filename.name
 
         with open(pathMod or self.filename, 'r+b') as f:
 
@@ -101,18 +152,22 @@ class HSTMaster(object):
                 for key, value in kwargs.items():
 
                     if key in data.dtype.names:
-
                         data[key] = value
 
                 buffer += data.tobytes()
 
             f.write(buffer)
 
-                    # f.flush()
-
-
+            # f.flush()
 
     def modHSTDataItem(self, index: int, *args, **kwargs: dict) -> None:
+        """
+
+        :param index:
+        :param args:
+        :param kwargs:
+        :return:
+        """
 
         for arg in args:
 
@@ -150,7 +205,5 @@ class HSTMaster(object):
                 print(f'{key} not in header')
 
 
-
 if __name__ == '__main__':
-
     pass

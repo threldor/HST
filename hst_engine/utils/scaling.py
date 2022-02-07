@@ -70,34 +70,6 @@ def scale_fast_2_byte_listcomp_slow(data: List, old_min: int, old_max: int, new_
     return [(old_min * (d - 32_000) - old_max * d + 32_000 * new_min) / (new_min - new_max) for d in data]
 
 
-    # result = List()
-    #
-    # for d in data:
-    #
-    #     if d in List([33_535, 33_534]):
-    #
-    #         #return d
-    #         result.append(d)
-    #         continue
-    #
-    #     scaled = (old_min * (d - 32_000) - old_max * d + 32_000 * new_min) / (new_min - new_max)
-    #
-    #     if scaled < 0 or scaled > 32_000:
-    #         if inval:
-    #             # return 33_535
-    #             result.append(33_535)
-    #             continue
-    #         else:
-    #             # return 0 if scaled < 0 else 32_000
-    #             result.append(0 if scaled < 0 else 32_000)
-    #             continue
-    #
-    #     #return scaled
-    #     result.append(int(scaled))
-    #
-    # return result
-
-
 @jit(nopython=True)
 def scale_fast_2_byte(data: List, old_min: int, old_max: int, new_min: int, new_max: int, inval: bool = True):
 
