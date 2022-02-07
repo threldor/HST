@@ -10,13 +10,13 @@ __version__ = "1.0.0"
 __email__ = ["jaun.vanheerden@allianceautomation.com.au"]
 __status__ = "Production"
 
-
 # imports
-from pathlib import Path
-from hst import HST
+import cProfile
 import datetime
 import json
-import cProfile, pstats
+import pstats
+from pathlib import Path
+from hst import HST
 
 
 # main
@@ -38,11 +38,6 @@ if __name__ == '__main__':
     # -- 2-BYTE --
 
     # setup the input file pointing to the HST_one file (master)
-    # inputFile = Path('../resources/converted/2-byte/ST051DOS01FIT0780201acHi.HST')
-
-    # inputPath_2 = _path / 'resources/converted/2-byte'
-    #
-    # inputFile_2 = inputPath_2 / 'ST051DOS01FIT0780201acHi.HST'
 
     # inputFile = Path(r'C:\Users\jaun.vanheerden\PycharmProjects\HST\resources\CleanHistory\TestTags2Byte_A'
     #                  r'\TestTag5SecondsInDay.HST')
@@ -96,6 +91,8 @@ if __name__ == '__main__':
     slice_dt.scale(0, 55, 0, 500)
 
     #V = slice_dt.get_data()
+
+    hst.to_float()
 
 
     profiler.disable()

@@ -10,14 +10,11 @@ from pathlib import Path
 import numpy as np
 from hstmaster import HSTMaster
 from utils.str_conversion import bytes_to_str
-from pprint import pprint
 import os
 from utils.scaling import scale, scale_float
-from functools import reduce
 import typing
 from copy import copy
-import struct
-from numba import njit
+import shutil
 
 __author__ = __maintainer__ = ["Jaun van Heerden"]
 __version__ = "1.0.0"
@@ -27,14 +24,23 @@ __status__ = "Production"
 
 # noinspection PyTypeChecker
 class HSTData(object):
+    """
 
+    """
     def __init__(self,
                  master: HSTMaster,
-                 masterItem: np.void) -> None:
+                 masterItem: np.void,
+                 index: int) -> None:
 
         self.master = master
 
         self.masterItem = masterItem
+
+        self.index = index
+
+        _spandex = self.index * self.master.dataLengthSegment  # span + index = spandex (lol)
+
+        self.span = range(_spandex, _spandex + self.master.dataLengthSegment - 1)
 
         self.dt_header = np.dtype(header_data(masterItem['version']))
 
@@ -42,7 +48,7 @@ class HSTData(object):
 
         self.index: typing.Union[int, None] = None
 
-        self.span: typing.Union[range, None] = None
+        #self.span: typing.Union[range, None] = None
 
         self.header = None
 
@@ -54,32 +60,38 @@ class HSTData(object):
 
         self.load()
 
-    def __getitem__(self, subscript):
+    def __getitem__(self, ss):
+        """
 
-        if isinstance(subscript, slice):
+        :param ss:
+        :return:
+        """
+
+        if isinstance(ss, slice):
             # do your handling for a slice object:
 
-            if subscript.stop is None and subscript.start is None:
+            if ss.stop is None and ss.start is None:
                 return self.get_data(0, self.masterItem['dataLength'])
 
             # ignore step
-            if subscript.stop is None:
-                start_index = (self.masterItem['dataLength'] + subscript.start) % self.masterItem['dataLength']
+            if ss.stop is None:
+                start_index = (self.masterItem['dataLength'] + ss.start) % self.masterItem['dataLength']
 
                 return self.get_data(start_index, self.masterItem['dataLength'] - 1 - start_index)
 
-            if subscript.start is None:
-                stop_index = (self.masterItem['dataLength'] + subscript.stop) % self.masterItem['dataLength']
+            if ss.start is None:
+                stop_index = (self.masterItem['dataLength'] + ss.stop) % self.masterItem['dataLength']
 
                 return self.get_data(0, stop_index)
 
-            start_index = (self.masterItem['dataLength'] + subscript.start) % self.masterItem['dataLength']
+            start_index = (self.masterItem['dataLength'] + ss.start) % self.masterItem['dataLength']
 
-            stop_index = (self.masterItem['dataLength'] + subscript.stop) % self.masterItem['dataLength']
+            stop_index = (self.masterItem['dataLength'] + ss.stop) % self.masterItem['dataLength']
 
             if start_index > stop_index:
 
-                _start = self.get_data(start_index, self.masterItem['dataLength'] - 1 - start_index)
+                _start = self.get_data(start_index,
+                                       self.masterItem['dataLength'] - 1 - start_index)
 
                 _stop = self.get_data(1, stop_index)
 
@@ -87,32 +99,49 @@ class HSTData(object):
 
             else:
 
-                data = self.get_data(start_index, stop_index - start_index)
+                data = self.get_data(start_index,
+                                     stop_index - start_index)
 
             return data
 
         else:
-            _index = (self.masterItem['dataLength'] + subscript) % self.masterItem['dataLength']
+            _index = (self.masterItem['dataLength'] + ss) % self.masterItem['dataLength']
 
             # Do your handling for a plain index
 
             return self.get_data(_index, 1)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
 
         return self.filename.name
 
-    def displayHeader(self):
+    def displayHeader(self) -> str:
+        """
 
-        print(*map(lambda x: f'{x[0]}\t{x[-1]}',
-                   zip(self.header.dtype.names, self.header)), sep='\n')
+        :return:
+        """
+
+        process = map(lambda x: f'{x[0]}\t{x[-1]}',
+                      zip(self.header.dtype.names, self.header))
+
+        print(*process, sep='\n')
+
+        return '\n'.join(process)
 
     def displayMasterItem(self):
+        """
+
+        :return:
+        """
 
         print(*map(lambda x: f'{x[0]}\t{x[-1]}',
                    zip(self.masterItem.dtype.names, self.masterItem)), sep='\n')
 
     def load(self):
+        """
+
+        :return:
+        """
 
         # read the HST_one and push to dict
 
@@ -148,20 +177,21 @@ class HSTData(object):
 
         return data
 
-    def set_index(self, index: int) -> None:
-        """sets the relative index based on the order within the `HSTDataItems` list
-        :type index: object
-        """
-        self.index = index
-
-        _spanIndex = self.index * self.master.dataLengthSegment
-
-        self.span = range(_spanIndex, _spanIndex + self.master.dataLengthSegment - 1)
+    # def set_index(self, index: int) -> None:
+    #     """sets the relative index based on the order within the `HSTDataItems` list
+    #     :type index: object
+    #     """
+    #     self.index = index
+    #
+    #     _spanIndex = self.index * self.master.dataLengthSegment
+    #
+    #     self.span = range(_spanIndex, _spanIndex + self.master.dataLengthSegment - 1)
 
     def offsetTime(self, offset: int, pathMod: Path = None) -> None:
         """
         Offset the startTime and endTime
 
+        :param pathMod:
         :param offset:
         :return:
         """
@@ -255,7 +285,6 @@ class HSTData(object):
             pathMod = pathMod / self.filename.name
 
         with open(pathMod or self.filename, 'r+b') as f:
-
             f.seek(self.header.itemsize + index * self.bytes)  # todo optional times 2 or times 8 dependant bytes
 
             sample = f.read(self.bytes * count)
@@ -263,15 +292,6 @@ class HSTData(object):
             data = [int.from_bytes(sample[k:k + self.bytes], 'little') for k in range(0, len(sample), self.bytes)]
 
             scaled = scale(data, o_min, o_max, n_min, n_max).astype(int)
-
-
-            # result = []
-            #
-            # for val in scaled.tolist():
-            #
-            #     check = val.to_bytes(self.bytes, 'little', signed=False)
-            #
-            #     result.append(check)
 
             result = [val.to_bytes(self.bytes, 'little', signed=False)
                       for val in scaled.tolist()]
@@ -282,18 +302,20 @@ class HSTData(object):
 
             f.flush()
 
+        self.update_scale(n_min, n_max)
+
+    def update_scale(self, n_min: int, n_max: int) -> None:
+
+        # update in data header
         self.modHeader(EngZero=n_min,
                        EngFull=n_max,
                        RawZero=n_min,
                        RawFull=n_max)
 
-    def byte_2_to_float(self,
-                        pathMod: Path = None,
-                        clamped: bool = False) -> None:
+    def to_float(self, pathMod: Path = None) -> None:
         """
+        :param pathMod:
 
-        :param count:
-        :type index: object
         """
 
         n_min = int(self.header['EngZero'])
@@ -303,49 +325,24 @@ class HSTData(object):
             pathMod = pathMod / self.filename.name
 
         with open(pathMod or self.filename, 'r+b') as f:
-
             f.seek(self.header.itemsize + 0 * self.bytes)  # todo optional times 2 or times 8 dependant bytes
 
             sample = f.read(self.bytes * self.header['dataLength'])
 
             data = [int.from_bytes(sample[k:k + self.bytes], 'little') for k in range(0, len(sample), self.bytes)]
 
-            #scaled = [int(val) for val in scale_float(data, n_min, n_max)]
             scaled = scale_float(data, n_min, n_max)
 
-            # result = []
-            #
-            # for val in scaled:
-            #
-            #     check = val.to_bytes(self.bytes, 'little', signed=True)
-            #
-            #     result.append(check)
-
-            result = [val.to_bytes(self.bytes, 'little', signed=False)
-                      for val in scaled.tolist()]
+            result = [int(val).to_bytes(self.bytes, 'little', signed=False)
+                      for val in scaled]
 
             f.seek(self.header.itemsize + 0 * self.bytes)
 
             f.write(b''.join(result))
 
-            # if type(result) is not bytes:
-            #
-            #     #f.write(reduce(lambda x, y: x + y, result))
-            #     #f.write(quick_reduce(np.array(result)))
-            #     #f.write(quick_reduce(np.array(result)))
-            #     f.write(b''.join(result))
-            #
-            # else:
-            #
-            #     f.write(result)
-
             f.flush()
 
         # change header
-
-        # self.header.dtype = header_data(6)
-
-        # x = np.array(list(self.header), dtype=header_data(6))
 
         blank = np.empty(1, dtype=header_data(6))
 
@@ -379,19 +376,6 @@ class HSTData(object):
         with open(pathMod or self.filename, 'wb') as file:
             file.write(blank.tobytes())
             file.write(contents)
-
-    def modMasterData(self):
-        pass
-
-
-@njit()
-def quick_reduce_function(x, y):
-    return x + y
-
-@njit()
-def quick_reduce(L):
-    return reduce(quick_reduce_function, L)
-
 
 
 if __name__ == '__main__':

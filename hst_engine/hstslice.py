@@ -13,8 +13,6 @@ from hstmaster import HSTMaster
 from hstdata import HSTData
 import shutil
 import os
-import numpy as np
-from numba import jit
 
 __author__ = __maintainer__ = ["Jaun van Heerden"]
 __version__ = "1.0.0"
@@ -46,8 +44,6 @@ class HSTSlice(object):
         self.resultFolder = resultFolder
 
         self.resultPath = None
-
-        # self.sampleRate = 30
 
         if not self.inplace:
 
@@ -82,15 +78,6 @@ class HSTSlice(object):
 
         self.end = end if end else self.master.dataLength
 
-    def __str__(self):
-
-        for HSTDataItem in self.HSTDataItems:
-
-            index, count = self.index_count(HSTDataItem)
-
-            #print(HSTDataItem)
-
-            index = 0
 
 
     def scale(self, o_min: int, o_max: int, n_min: int, n_max: int) -> None:
@@ -190,7 +177,9 @@ class HSTSlice(object):
 
 
     def get_data(self):
+        """
 
+        """
         if len(self.HSTDataItems) == 1:
             data = self.HSTDataItems[0][self.start:self.end]
         elif len(self.HSTDataItems) == 2:
@@ -203,3 +192,12 @@ class HSTSlice(object):
 
         return [data, list(range(self.start, self.end, self.master.samplePeriod))]
 
+
+    def modMasterHST(self, *args, **kwargs):
+        self.master.modHSTHeader(args, kwargs)
+
+    def modMasterHSTDataItem(self, index, *args, **kwargs):
+        self.master.modHSTDataItem(index, args, kwargs)
+
+    def modMasterHSTDataItems(self, *args, **kwargs):
+        self.master.modHSTDataItems(args, kwargs)

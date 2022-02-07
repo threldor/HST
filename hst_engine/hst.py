@@ -14,14 +14,17 @@ from hstmaster import HSTMaster
 from hstdata import HSTData
 from pathlib import Path
 import datetime
-from numba.typed import List
-# from hst_engine.utils.scaling import scale
 from hstslice import HSTSlice
 import typing
 from utils.datetime_conversion import datetime_to_index
+from formats import header_HST
+import numpy as np
 
 
 class HST(object):
+    """
+
+    """
 
     def __init__(self,
                  filename: Path = None,
@@ -41,18 +44,19 @@ class HST(object):
 
         self.repath = repath
 
-        #self.samplePeriod = None
-
         self.dataLengthSegment = None
 
         self.dataLength = None
 
         if filename is not None:
-
             self.load(filename)
 
-    def __getitem__(self, subscript):
+    def __getitem__(self, subscript: slice):
+        """
 
+        :param subscript:
+        :return:
+        """
         # check to see if first need to convert datetime to index
         subscript = self.subscript_process(subscript)
 
@@ -108,23 +112,23 @@ class HST(object):
 
         self.HSTMaster = HSTMaster(self, self.filename)
 
-        self.HSTDataItems = [HSTData(self.HSTMaster, data) for data in self.HSTMaster.data]
+        self.HSTDataItems = [HSTData(self.HSTMaster, data, index) for index, data in
+                             zip(self.HSTMaster.data_index, self.HSTMaster.data)]
 
         # get the data length segment from the first HSTData item - assume all are the same #todo check this
         self.dataLengthSegment = self.HSTDataItems[0].masterItem['dataLength']
 
         self.dataLength = self.dataLengthSegment * len(self.HSTDataItems)
 
-        for index, HSTDataItem in enumerate(self.HSTDataItems):
-
-            HSTDataItem.set_index(index)
+        # for index, HSTDataItem in enumerate(self.HSTDataItems):
+        #     HSTDataItem.set_index(index)
 
 
     def get_HSTDataItems(self, start_index: int, count: int = 1):
         """
 
-        :param count: 
-        :type start_index: object
+        :param count: int
+        :param start_index: int
         """
         # find files
         startIndex = int(start_index / self.dataLengthSegment)
@@ -142,7 +146,7 @@ class HST(object):
 
     def subscript_process(self, subscript: typing.Union[datetime.datetime, slice]):
         """x
-        :type subscript: object
+        :param subscript: typing.Union[datetime.datetime, slice]
         """
         if isinstance(subscript, slice):
 
@@ -151,40 +155,74 @@ class HST(object):
             _stop = subscript.stop
 
             if isinstance(_start, datetime.datetime):
-
                 _start = datetime_to_index(_start, self.HSTMaster.earliest, self.HSTMaster.samplePeriod)
 
-                # if _start not in range(0, self.dataLength):
-                #     raise Exception(f'{subscript} not in valid range - index at {_start} of max {self.dataLength}')
-
             if isinstance(_stop, datetime.datetime):
-
                 _stop = datetime_to_index(_stop, self.HSTMaster.earliest, self.HSTMaster.samplePeriod) + 1
-
-                # if _stop not in range(0, self.dataLength):
-                #     raise Exception(f'{subscript} not in valid range - index at {_stop} of max {self.dataLength}')
 
             return slice(_start, _stop)
 
         else:
-            
+
             if isinstance(subscript, datetime.datetime):
-
                 _index = datetime_to_index(subscript, self.HSTMaster.earliest, self.HSTMaster.samplePeriod)
-
-                # if _index not in range(0, self.dataLength):
-                #     raise Exception(f'{subscript} not in valid range - index at {_index} of max {self.dataLength}')
 
                 return _index
 
         return subscript
 
 
+    def to_float(self):
+        """
+
+        :return:
+        """
+
+        for HSTDataItem in self.HSTDataItems:
+            HSTDataItem.to_float()
+
+        # change HST
+
+        contents = []
+
+        for data in self.HSTMaster.data:
+            blank = np.empty(1, dtype=header_HST(6))
+
+            blank["name"] = data["name"]
+            blank["ID"] = data["ID"]
+            blank["filetype"] = data["filetype"]
+            blank["version"] = 6
+            blank["startEvNo"] = data["startEvNo"]
+            blank["alignment1"] = data["alignment1"]
+            blank["logName"] = data["logName"]
+            blank["mode"] = data["mode"]
+            blank["area"] = data["area"]
+            blank["priv"] = data["priv"]
+            blank["hystoryType"] = data["hystoryType"]
+            blank["samplePeriod"] = data["samplePeriod"]
+            blank["sEngUnits"] = data["sEngUnits"]
+            blank["format"] = data["format"]
+            blank["startTime"] = data["startTime"] * 1E7 - 11644473600
+            blank["endTime"] = data["endTime"] * 1E7 - 11644473600
+            blank["dataLength"] = data["dataLength"]
+            blank["filePointer"] = data["filePointer"]
+            blank["endEvNo"] = data["endEvNo"]
+            blank["alignment2"] = data["alignment1"]
+
+            contents.append(blank)
+
+        with open(self.filename, 'rb+') as file:
+            file.seek(self.HSTMaster.header.itemsize)
+
+            for item in contents:
+                file.write(item.tobytes())
+
+        self.HSTMaster.modHSTHeader(version=6)
+
 
 if __name__ == '__main__':
-
     # setup the input file pointing to the HST_one file (master)
-    #inputFile = Path('../resources/converted/2-byte/ST051DOS01FIT0780201acHi.HST')
+    # inputFile = Path('../resources/converted/2-byte/ST051DOS01FIT0780201acHi.HST')
     # inputFile = Path(r'C:\Users\jaun.vanheerden\PycharmProjects\HST\resources\CleanHistory\TestTags2Byte_A'
     #                  r'\TestTag5SecondsInDay.HST')
     inputFile = Path('C:/Users/jaun.vanheerden/PycharmProjects/HST/resources/ST050/ST050PLC01P401asFrequency.HST')
@@ -196,7 +234,7 @@ if __name__ == '__main__':
 
     # repath to the following dir, this repath replaces the paths
     # within the HST_one
-    #hst.repath = Path(r'C:\Users\jaun.vanheerden\PycharmProjects\HST\resources\converted\2-byte')
+    # hst.repath = Path(r'C:\Users\jaun.vanheerden\PycharmProjects\HST\resources\converted\2-byte')
     # hst.repath = Path(r'C:\Users\jaun.vanheerden\PycharmProjects\HST\resources\CleanHistory\TestTags2Byte_A')
     hst.repath = Path('C:/Users/jaun.vanheerden/PycharmProjects/HST/resources/ST050')
 
@@ -205,21 +243,18 @@ if __name__ == '__main__':
 
     hst.HSTMaster.modHSTDataItems(mode=3)
 
-    #print(hst[:].get_data())
-
+    # print(hst[:].get_data())
 
     # <single file editing>
     # choose object
     HST_10 = hst.HSTDataItems[10]
 
-
-
     HST_10.byte_2_to_float()
 
     # modify header
     # as keyword args
-    #HST_10.modHeader(EngFull=1000)
-    #HST_10.modHeader(endTime=131337503700000010)
+    # HST_10.modHeader(EngFull=1000)
+    # HST_10.modHeader(endTime=131337503700000010)
     # or as dict
     HST_10.modHeader({'sEngUnits': 'm/s2'})
     # or as both
