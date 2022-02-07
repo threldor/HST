@@ -30,7 +30,7 @@ def scale_fast(data: np.array, old_min: int, old_max: int, new_min: int, new_max
 
 
 
-# @njit(fastmath=True)
+
 @njit(parallel=True)
 def scale_fast_2_byte_faster(data: np.array, old_min: int, old_max: int, new_min: int, new_max: int, inval: bool = True):
 
@@ -60,14 +60,39 @@ def scale_fast_2_byte_faster(data: np.array, old_min: int, old_max: int, new_min
 
 
 
-@njit()
-def scale_fast_2_byte_listcomp(data: List, old_min: int, old_max: int, new_min: int, new_max: int, inval: bool = True):
+@njit(parallel=True)
+def scale_fast_to_2_byte(data: np.array, old_min: int, old_max: int, inval: bool = True):
 
-    return [(old_min * (d - 32_000) - old_max * d + 32_000 * new_min) / (new_min - new_max) for d in data]
+    y = np.empty(data.shape)
 
-def scale_fast_2_byte_listcomp_slow(data: List, old_min: int, old_max: int, new_min: int, new_max: int,
-                               inval: bool = True):
-    return [(old_min * (d - 32_000) - old_max * d + 32_000 * new_min) / (new_min - new_max) for d in data]
+    for i in prange(len(data)):
+
+        if data[i] in [33_535, 33_534]:
+
+            y[i] = data[i]
+
+        else:
+
+            scaled = ((data[i] - old_min) / (old_max - old_min)) * 32_000
+
+            if scaled < 0 or scaled > 32_000:
+                if inval:
+                    # return 33_535
+                    y[i] = 33_535
+                else:
+                    # return 0 if scaled < 0 else 32_000
+                    y[i] = 0 if scaled < 0 else 32_000
+            else:
+                y[i] = scaled
+
+    return y
+
+
+
+
+
+
+
 
 
 @jit(nopython=True)
@@ -99,13 +124,6 @@ def scale_fast_2_byte(data: List, old_min: int, old_max: int, new_min: int, new_
         result.append(scaled)
 
     return result
-
-    # return [(old_min * (d - 32_000) - old_max * d + 32_000 * new_min) / (new_min - new_max)
-    #
-    #         if (d < 0 or d > 32_000) and not inval else (0 if d < 0 else 32_000)
-    #
-    # if d not in [33535, 33534] else d
-    #         for d in data]
 
 
 def scale(data, old_min, old_max, new_min, new_max):

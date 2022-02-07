@@ -19,6 +19,10 @@ import typing
 from utils.datetime_conversion import datetime_to_index
 from formats import header_HST
 import numpy as np
+import pandas as pd
+
+from tkinter import filedialog as fd
+
 
 
 class HST(object):
@@ -220,12 +224,35 @@ class HST(object):
         self.HSTMaster.modHSTHeader(version=6)
 
 
+    def import_csv(self, filename: Path) -> HSTSlice:
+
+        df = pd.read_csv(filename)
+
+        # get span
+
+        df["TIME"] = [x.replace('.0', ':00') for x in df["TIME"]]
+
+        df["DT"] = pd.to_datetime(df["DATE"]) + pd.to_timedelta(df["TIME"])
+
+        #df["DT"] = df["DT"].apply(lambda x: datetime.datetime.strptime(x.strip(),  '%d/%m/%Y%H:%M:%S.0'))
+
+        start, end = min(df["DT"]), max(df["DT"])
+
+        # get slice
+        _slice = self[start:end]
+
+        # apply data
+        _slice.set_data(df["DATA"].tolist())
+
+        return _slice
+
+
 if __name__ == '__main__':
     # setup the input file pointing to the HST_one file (master)
     # inputFile = Path('../resources/converted/2-byte/ST051DOS01FIT0780201acHi.HST')
-    # inputFile = Path(r'C:\Users\jaun.vanheerden\PycharmProjects\HST\resources\CleanHistory\TestTags2Byte_A'
-    #                  r'\TestTag5SecondsInDay.HST')
-    inputFile = Path('C:/Users/jaun.vanheerden/PycharmProjects/HST/resources/ST050/ST050PLC01P401asFrequency.HST')
+    inputFile = Path(r'C:\Users\jaun.vanheerden\PycharmProjects\HST\resources\CleanHistory\TestTags2Byte_A'
+                     r'\TestTag5SecondsInDay.HST')
+    #inputFile = Path('C:/Users/jaun.vanheerden/PycharmProjects/HST/resources/ST050/ST050PLC01P401asFrequency.HST')
 
     # create a blank HST_one object to set the drive prior to loading
     hst = HST()
@@ -235,11 +262,16 @@ if __name__ == '__main__':
     # repath to the following dir, this repath replaces the paths
     # within the HST_one
     # hst.repath = Path(r'C:\Users\jaun.vanheerden\PycharmProjects\HST\resources\converted\2-byte')
-    # hst.repath = Path(r'C:\Users\jaun.vanheerden\PycharmProjects\HST\resources\CleanHistory\TestTags2Byte_A')
-    hst.repath = Path('C:/Users/jaun.vanheerden/PycharmProjects/HST/resources/ST050')
+    hst.repath = Path(r'C:\Users\jaun.vanheerden\PycharmProjects\HST\resources\CleanHistory\TestTags2Byte_A')
+    #hst.repath = Path('C:/Users/jaun.vanheerden/PycharmProjects/HST/resources/ST050')
 
     # load
     hst.load(inputFile)
+
+
+    res = hst.import_csv(fd.askopenfilename())
+
+    print(res)
 
     hst.HSTMaster.modHSTDataItems(mode=3)
 

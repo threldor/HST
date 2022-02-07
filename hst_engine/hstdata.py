@@ -11,7 +11,7 @@ import numpy as np
 from hstmaster import HSTMaster
 from utils.str_conversion import bytes_to_str
 import os
-from utils.scaling import scale, scale_float
+from utils.scaling import scale, scale_float, scale_fast_to_2_byte
 import typing
 from copy import copy
 import shutil
@@ -27,6 +27,7 @@ class HSTData(object):
     """
 
     """
+
     def __init__(self,
                  master: HSTMaster,
                  masterItem: np.void,
@@ -40,13 +41,15 @@ class HSTData(object):
 
         _spandex = self.index * self.master.dataLengthSegment  # span + index = spandex (lol)
 
+        self.order_index = self.master.data_original.index(self.index)
+
         self.span = range(_spandex, _spandex + self.master.dataLengthSegment - 1)
 
         self.dt_header = np.dtype(header_data(masterItem['version']))
 
         self.filename: Path = Path(bytes_to_str(self.masterItem['name']))
 
-        #self.span: typing.Union[range, None] = None
+        # self.span: typing.Union[range, None] = None
 
         self.header = None
 
@@ -206,7 +209,6 @@ class HSTData(object):
         # update the HST # todo here james
         self.master.modHSTDataItem(self.index, {'pathMod': pathMod}, startTime=st, endTime=et)
 
-
     def modHeader(self, *args, **kwargs: dict) -> None:
         """
         :param pathMod:
@@ -277,7 +279,6 @@ class HSTData(object):
         o_max = int(o_max)
         n_min = int(n_min)
         n_max = int(n_max)
-
 
         if pathMod is not None:
             pathMod = pathMod / self.filename.name
@@ -374,6 +375,31 @@ class HSTData(object):
         with open(pathMod or self.filename, 'wb') as file:
             file.write(blank.tobytes())
             file.write(contents)
+
+
+
+    def set_data(self, index: int, data: list, pathMod: Path = None):
+        """
+
+        :param index:
+        :param data:
+        :return:
+        """
+
+        if pathMod is not None:
+            pathMod = pathMod / self.filename.name
+
+        # scale
+        data = scale_fast_to_2_byte(np.array(data), self.header['EngZero'], self.header['EngFull'])
+
+        with open(pathMod or self.filename, 'rb+') as f:
+            result = [round(val).to_bytes(self.bytes, 'little', signed=False)
+                      for val in data.tolist()]
+
+            f.seek(self.header.itemsize + index * self.bytes)
+
+            f.write(b''.join(result))
+
 
 
 if __name__ == '__main__':
