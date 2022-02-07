@@ -274,7 +274,7 @@ class HSTData(object):
         self.modHeader(EngZero=n_min,
                        EngFull=n_max,
                        RawZero=n_min,
-                       RawMax=n_max)
+                       RawFull=n_max)
 
     def byte_2_to_float(self,
                         pathMod: Path = None,
