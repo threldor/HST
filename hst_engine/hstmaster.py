@@ -65,6 +65,7 @@ class HSTMaster(object):
 
         self.samplePeriod = int(self.data['samplePeriod'][0] / 1000)
 
+
         try:
             # 2 byte
             self.earliest = datetime.datetime.utcfromtimestamp(min(self.data['startTime']))
