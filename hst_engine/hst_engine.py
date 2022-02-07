@@ -10,13 +10,13 @@ __version__ = "1.0.0"
 __email__ = ["jaun.vanheerden@allianceautomation.com.au"]
 __status__ = "Production"
 
-
 # imports
-from pathlib import Path
-from hst import HST
+import cProfile
 import datetime
 import json
-import cProfile, pstats
+import pstats
+from pathlib import Path
+from hst import HST
 
 
 # main

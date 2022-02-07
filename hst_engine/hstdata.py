@@ -10,13 +10,11 @@ from pathlib import Path
 import numpy as np
 from hstmaster import HSTMaster
 from utils.str_conversion import bytes_to_str
-from pprint import pprint
 import os
 from utils.scaling import scale, scale_float
-from functools import reduce
 import typing
 from copy import copy
-from numba import njit
+
 
 __author__ = __maintainer__ = ["Jaun van Heerden"]
 __version__ = "1.0.0"
@@ -56,28 +54,33 @@ class HSTData(object):
 
         self.load()
 
-    def __getitem__(self, subscript):
+    def __getitem__(self, ss):
+        """
 
-        if isinstance(subscript, slice):
+        :param ss:
+        :return:
+        """
+
+        if isinstance(ss, slice):
             # do your handling for a slice object:
 
-            if subscript.stop is None and subscript.start is None:
+            if ss.stop is None and ss.start is None:
                 return self.get_data(0, self.masterItem['dataLength'])
 
             # ignore step
-            if subscript.stop is None:
-                start_index = (self.masterItem['dataLength'] + subscript.start) % self.masterItem['dataLength']
+            if ss.stop is None:
+                start_index = (self.masterItem['dataLength'] + ss.start) % self.masterItem['dataLength']
 
                 return self.get_data(start_index, self.masterItem['dataLength'] - 1 - start_index)
 
-            if subscript.start is None:
-                stop_index = (self.masterItem['dataLength'] + subscript.stop) % self.masterItem['dataLength']
+            if ss.start is None:
+                stop_index = (self.masterItem['dataLength'] + ss.stop) % self.masterItem['dataLength']
 
                 return self.get_data(0, stop_index)
 
-            start_index = (self.masterItem['dataLength'] + subscript.start) % self.masterItem['dataLength']
+            start_index = (self.masterItem['dataLength'] + ss.start) % self.masterItem['dataLength']
 
-            stop_index = (self.masterItem['dataLength'] + subscript.stop) % self.masterItem['dataLength']
+            stop_index = (self.masterItem['dataLength'] + ss.stop) % self.masterItem['dataLength']
 
             if start_index > stop_index:
 
@@ -94,7 +97,7 @@ class HSTData(object):
             return data
 
         else:
-            _index = (self.masterItem['dataLength'] + subscript) % self.masterItem['dataLength']
+            _index = (self.masterItem['dataLength'] + ss) % self.masterItem['dataLength']
 
             # Do your handling for a plain index
 
@@ -105,6 +108,10 @@ class HSTData(object):
         return self.filename.name
 
     def displayHeader(self) -> str:
+        """
+
+        :return:
+        """
 
         process = map(lambda x: f'{x[0]}\t{x[-1]}',
                       zip(self.header.dtype.names, self.header))
@@ -114,11 +121,19 @@ class HSTData(object):
         return '\n'.join(process)
 
     def displayMasterItem(self):
+        """
+
+        :return:
+        """
 
         print(*map(lambda x: f'{x[0]}\t{x[-1]}',
                    zip(self.masterItem.dtype.names, self.masterItem)), sep='\n')
 
     def load(self):
+        """
+
+        :return:
+        """
 
         # read the HST_one and push to dict
 
@@ -268,7 +283,7 @@ class HSTData(object):
 
         self.update_scale(n_min, n_max)
 
-    def update_scale(self, n_min, n_max):
+    def update_scale(self, n_min: int, n_max: int) -> None:
 
         # update in data header
         self.modHeader(EngZero=n_min,
@@ -276,9 +291,8 @@ class HSTData(object):
                        RawZero=n_min,
                        RawFull=n_max)
 
-    def byte_2_to_float(self,
-                        pathMod: Path = None,
-                        clamped: bool = False) -> None:
+    def to_float(self,
+                pathMod: Path = None) -> None:
         """
 
         :param count:
@@ -343,11 +357,6 @@ class HSTData(object):
         with open(pathMod or self.filename, 'wb') as file:
             file.write(blank.tobytes())
             file.write(contents)
-
-        self.master.modHSTDataItem(self.index,
-                                   version=blank["version"],
-                                   startTime=blank["startTime"],
-                                   endTime=blank["endTime"])
 
 
 if __name__ == '__main__':
