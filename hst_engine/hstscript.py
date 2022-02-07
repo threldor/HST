@@ -24,6 +24,7 @@ class HSTScript:
 
         for command in self.commands:
 
+
             getattr(self.hstslice, command[0])(*command[-1])
 
 
