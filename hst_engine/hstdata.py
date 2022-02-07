@@ -5,7 +5,7 @@ Example:
 """
 
 # imports
-from formats import header_data, data_format, EightByteV600, EightByteV531
+from formats import header_data, data_format, EightByteV600, EightByteV531, unixtime_format
 from pathlib import Path
 import numpy as np
 from hstmaster import HSTMaster
@@ -165,8 +165,19 @@ class HSTData(object):
         :param offset:
         :return:
         """
-        self.modHeader({'pathMod': pathMod}, startTime=self.header['startTime'] + offset,
-                       endTime=self.header['endTime'] + offset)
+        # need to convert offset to 8 byte format as required
+        offset = offset if unixtime_format(self.header['version']) else offset * 1E7
+
+        # get new times
+        st = self.header['startTime'] + offset
+        et = self.header['endTime'] + offset
+
+        # update the data files
+        self.modHeader({'pathMod': pathMod}, startTime=st, endTime=et)
+
+        # update the HST
+        self.master.modHSTDataItem(self.index, {'pathMod': pathMod}, startTime=st, endTime=et)
+
 
     def modHeader(self, *args, **kwargs: dict) -> None:
         """
@@ -355,8 +366,8 @@ class HSTData(object):
         blank["samplePeriod"] = self.header["samplePeriod"]
         blank["sEngUnits"] = self.header["sEngUnits"]
         blank["format"] = self.header["format"]
-        blank["startTime"] = self.header["startTime"] * 1E7 - 11644473600
-        blank["endTime"] = self.header["endTime"] * 1E7 - 11644473600
+        blank["startTime"] = (self.header["startTime"] + 11_644_473_600) * 1E7
+        blank["endTime"] = (self.header["endTime"] + 11_644_473_600) * 1E7
         blank["dataLength"] = self.header["dataLength"]
         blank["filePointer"] = self.header["filePointer"]
         blank["endEvNo"] = self.header["endEvNo"]
