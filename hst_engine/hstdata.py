@@ -41,6 +41,8 @@ class HSTData(object):
 
         _spandex = self.index * self.master.dataLengthSegment  # span + index = spandex (lol)
 
+        self.order_index = self.master.data_original.index(self.index)
+
         self.span = range(_spandex, _spandex + self.master.dataLengthSegment - 1)
 
         self.dt_header = np.dtype(header_data(masterItem['version']))
