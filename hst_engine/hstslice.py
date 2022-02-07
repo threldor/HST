@@ -6,6 +6,9 @@ Example:
 
 
 # imports
+import datetime
+import time
+
 from hstmaster import HSTMaster
 from hstdata import HSTData
 import shutil
@@ -102,6 +105,25 @@ class HSTSlice(object):
                                    n_min,
                                    n_max,
                                    self.resultPath)
+
+    def offsetToToday(self) -> None:
+        """
+        Offset the startTime and endTime shifting
+
+        :param offset:
+        :return:
+        """
+        # date today
+        todayDate = datetime.date.today()
+
+        # last sample date
+        endDate = datetime.datetime.fromtimestamp(self.master.data[-1]['endTime']).date()
+
+        # time offset
+        offset = time.mktime(todayDate.timetuple()) - time.mktime(endDate.timetuple())
+
+        for HSTDataItem in self.HSTDataItems:
+            HSTDataItem.offsetTime(offset, self.resultPath)
 
     def offsetTime(self, offset: int) -> None:
         """
