@@ -59,6 +59,13 @@ if __name__ == '__main__':
     # load
     hst.load(inputFile)
 
+
+    # blank HSTImportCSV
+    #new = hst
+
+
+
+
     # <single file editing>
     # choose object
     #HST_10 = hst.HSTDataItems[10]
