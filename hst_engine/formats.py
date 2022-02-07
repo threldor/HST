@@ -313,6 +313,31 @@ def data_format(v: int) -> list:
     return switcher.get(v, None)
 
 
+def unixtime_format(v: int) -> list:
+    """ return 1 for unix time and 0 for 8 byte 100ns format """
+
+    # version enumeration
+    # TwoByteOriginal = 0  # Before v5.00  1
+    # TwoBytePreV500 = 1  # Before v5.00  1
+    # TwoByteV500 = 2  # 5.00 - 5.30   1
+    # TwoByteV531 = 3  # 5.31 - 5.50   1
+    # TwoByteV600 = 5  # 6.00 - ?      1
+    # EightByteV531 = 4  # 5.31 - 550    0
+    # EightByteV600 = 6  # 6.00 - ?      0
+
+    switcher = {
+        0: 1,
+        1: 1,
+        2: 1,
+        3: 1,
+        4: 0,
+        5: 1,
+        6: 0,
+    }
+
+    return switcher.get(v, None)
+
+
 if __name__ == "__main__":
 
     x = np.empty(1, dtype=header_data(6))

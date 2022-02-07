@@ -66,12 +66,21 @@ class HSTMaster(object):
         self.samplePeriod = int(self.data['samplePeriod'][0] / 1000)
 
         try:
-
+            # 2 byte
             self.earliest = datetime.datetime.utcfromtimestamp(min(self.data['startTime']))
 
         except:
+            # 8 byte
+            self.earliest = datetime.datetime.utcfromtimestamp(int((min(self.data['startTime']) / 1E7)) - 11_644_473_600)
 
-            self.earliest = datetime.datetime.utcfromtimestamp(int(min(self.data['startTime']) / 100000000))
+        try:
+            # 2 byte
+            self.latest = datetime.datetime.utcfromtimestamp(max(self.data['endTime']))
+
+        except:
+            # 8 byte
+            self.latest = datetime.datetime.utcfromtimestamp(int((max(self.data['endTime']) / 1E7)) - 11_644_473_600)
+
 
     def __len__(self) -> int:
 

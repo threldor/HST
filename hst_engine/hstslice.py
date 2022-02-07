@@ -55,7 +55,15 @@ class HSTSlice(object):
 
                 os.mkdir(self.resultPath)
 
-            # copy to and set dir
+            # copy HST
+            newPath = self.resultPath / self.master.filename.name
+
+            if os.path.exists(newPath):
+                os.remove(newPath)
+
+            shutil.copyfile(self.master.filename, newPath)
+
+            # copy .### data to and set dir
             for HSTDataItem in self.HSTDataItems:
 
                 newPath = self.resultPath / HSTDataItem.filename.name
@@ -104,7 +112,7 @@ class HSTSlice(object):
         todayDate = datetime.date.today()
 
         # last sample date
-        endDate = datetime.datetime.fromtimestamp(self.master.data[-1]['endTime']).date()
+        endDate = self.master.latest.date()
 
         # time offset
         offset = time.mktime(todayDate.timetuple()) - time.mktime(endDate.timetuple())
