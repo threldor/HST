@@ -17,6 +17,7 @@ from functools import reduce
 import typing
 from copy import copy
 import struct
+from numba import njit
 
 __author__ = __maintainer__ = ["Jaun van Heerden"]
 __version__ = "1.0.0"
@@ -238,9 +239,6 @@ class HSTData(object):
         n_min = int(n_min)
         n_max = int(n_max)
 
-        # if self.bytes == 8:  # temp return on floats
-        #
-        #     return
 
         if pathMod is not None:
             pathMod = pathMod / self.filename.name
@@ -251,56 +249,32 @@ class HSTData(object):
 
             sample = f.read(self.bytes * count)
 
-            if self.bytes == 2:
-                data = [int.from_bytes(sample[k:k + self.bytes], 'little') for k in range(0, len(sample), self.bytes)]
+            data = [int.from_bytes(sample[k:k + self.bytes], 'little') for k in range(0, len(sample), self.bytes)]
 
-            # else:
+            scaled = scale(data, o_min, o_max, n_min, n_max).astype(int)
+
+
+            # result = []
             #
-            #     data = np.frombuffer(sample, dtype='float')
-
-            scaled = [int(val) for val in scale(data, o_min, o_max, n_min, n_max)]
-
-            result = []
-
-            # if self.bytes == 2:
-
-            for val in scaled:
-                # val = 32767 if val > 32767 else val
-
-                # todo invalid or clamped ?
-
-                # if clamped:
-                #
-                #     if val > self.header['EngFull']:
-                #         val = self.header['EngFull']
-                #
-                #     if val < self.header['EngMin']:
-                #         val = self.header['EngMin']
-                #
-                # else:
-                #
-                #     if val > self.header['EngFull'] or val < self.header['EngZero']:
-                #         val = -32001
-
-                check = val.to_bytes(self.bytes, 'little', signed=False)
-
-                result.append(check)
-
-            # else:
+            # for val in scaled.tolist():
             #
-            #     result = np.array(scaled).tobytes()
+            #     check = val.to_bytes(self.bytes, 'little', signed=False)
+            #
+            #     result.append(check)
+
+            result = [val.to_bytes(self.bytes, 'little', signed=False)
+                      for val in scaled.tolist()]
 
             f.seek(self.header.itemsize + index * self.bytes)
 
-            if type(result) is not bytes:
-
-                f.write(reduce(lambda x, y: x + y, result))
-
-            else:
-
-                f.write(result)
+            f.write(b''.join(result))
 
             f.flush()
+
+        self.modHeader(EngZero=n_min,
+                       EngFull=n_max,
+                       RawZero=n_min,
+                       RawMax=n_max)
 
     def byte_2_to_float(self,
                         pathMod: Path = None,
@@ -323,53 +297,36 @@ class HSTData(object):
 
             sample = f.read(self.bytes * self.header['dataLength'])
 
-            # if self.bytes == 2:
-
             data = [int.from_bytes(sample[k:k + self.bytes], 'little') for k in range(0, len(sample), self.bytes)]
 
-            # else:
+            #scaled = [int(val) for val in scale_float(data, n_min, n_max)]
+            scaled = scale_float(data, n_min, n_max)
+
+            # result = []
             #
-            #     data = np.frombuffer(sample, dtype='float')
-
-            scaled = [int(val) for val in scale_float(data, n_min, n_max)]
-
-            result = []
-
-            for val in scaled:
-                # val = 32767 if val > 32767 else val
-                #
-                # # todo invalid or clamped ?
-                #
-                # if clamped:
-                #
-                #     if val > self.header['EngFull']:
-                #         val = self.header['EngFull']
-                #
-                #     if val < self.header['EngMin']:
-                #         val = self.header['EngMin']
-                #
-                # else:
-                #
-                #     if val > self.header['EngFull'] or val < self.header['EngZero']:
-                #         val = -32001
-
-                check = val.to_bytes(self.bytes, 'little', signed=True)
-
-                result.append(check)
-
-            # else:
+            # for val in scaled:
             #
-            #     result = np.array(scaled).tobytes()
+            #     check = val.to_bytes(self.bytes, 'little', signed=True)
+            #
+            #     result.append(check)
+
+            result = [val.to_bytes(self.bytes, 'little', signed=False)
+                      for val in scaled.tolist()]
 
             f.seek(self.header.itemsize + 0 * self.bytes)
 
-            if type(result) is not bytes:
+            f.write(b''.join(result))
 
-                f.write(reduce(lambda x, y: x + y, result))
-
-            else:
-
-                f.write(result)
+            # if type(result) is not bytes:
+            #
+            #     #f.write(reduce(lambda x, y: x + y, result))
+            #     #f.write(quick_reduce(np.array(result)))
+            #     #f.write(quick_reduce(np.array(result)))
+            #     f.write(b''.join(result))
+            #
+            # else:
+            #
+            #     f.write(result)
 
             f.flush()
 
@@ -414,6 +371,16 @@ class HSTData(object):
 
     def modMasterData(self):
         pass
+
+
+@njit()
+def quick_reduce_function(x, y):
+    return x + y
+
+@njit()
+def quick_reduce(L):
+    return reduce(quick_reduce_function, L)
+
 
 
 if __name__ == '__main__':

@@ -10,8 +10,9 @@ __email__ = ["jaun.vanheerden@allianceautomation.com.au"]
 __status__ = "Production"
 
 # imports
-from numba import njit, jit
+from numba import njit, jit, prange
 from numba.typed import List
+import numpy as np
 
 
 @jit(nopython=True)
@@ -29,34 +30,35 @@ def scale_fast(data: List, old_min: int, old_max: int, new_min: int, new_max: in
 
 
 
-@njit(fastmath=True)
-def scale_fast_2_byte_faster(data: List, old_min: int, old_max: int, new_min: int, new_max: int, inval: bool = True):
-    result = List()
+# @njit(fastmath=True)
+@njit(parallel=True)
+def scale_fast_2_byte_faster(data: np.array, old_min: int, old_max: int, new_min: int, new_max: int, inval: bool = True):
 
-    for d in data:
+    y = np.empty(data.shape)
 
-        if d in List([33_535, 33_534]):
+    for i in prange(len(data)):
 
-            #return d
-            result.append(d)
-            continue
+        if data[i] in [33_535, 33_534]:
 
-        scaled = (old_min * (d - 32_000) - old_max * d + 32_000 * new_min) / (new_min - new_max)
+            y[i] = data[i]
 
-        if scaled < 0 or scaled > 32_000:
-            if inval:
-                # return 33_535
-                result.append(33_535)
-                continue
+        else:
+
+            scaled = (old_min * (data[i] - 32_000) - old_max * data[i] + 32_000 * new_min) / (new_min - new_max)
+
+            if scaled < 0 or scaled > 32_000:
+                if inval:
+                    # return 33_535
+                    y[i] = 33_535
+                else:
+                    # return 0 if scaled < 0 else 32_000
+                    y[i] = 0 if scaled < 0 else 32_000
             else:
-                # return 0 if scaled < 0 else 32_000
-                result.append(0 if scaled < 0 else 32_000)
-                continue
+                y[i] = scaled
 
-        #return scaled
-        result.append(int(scaled))
+    return y
 
-    return result
+
 
 @njit()
 def scale_fast_2_byte_listcomp(data: List, old_min: int, old_max: int, new_min: int, new_max: int, inval: bool = True):
@@ -141,7 +143,8 @@ def scale(data, old_min, old_max, new_min, new_max):
     """
     if isinstance(data, list) or isinstance(data, List):
 
-        return scale_fast_2_byte(List(data), old_min, old_max, new_min, new_max)
+        #return scale_fast_2_byte(List(data), old_min, old_max, new_min, new_max)
+        return scale_fast_2_byte_faster(np.array(data), old_min, old_max, new_min, new_max)
 
     else:
 

@@ -185,8 +185,9 @@ if __name__ == '__main__':
 
     # setup the input file pointing to the HST_one file (master)
     #inputFile = Path('../resources/converted/2-byte/ST051DOS01FIT0780201acHi.HST')
-    inputFile = Path(r'C:\Users\jaun.vanheerden\PycharmProjects\HST\resources\CleanHistory\TestTags2Byte_A'
-                     r'\TestTag5SecondsInDay.HST')
+    # inputFile = Path(r'C:\Users\jaun.vanheerden\PycharmProjects\HST\resources\CleanHistory\TestTags2Byte_A'
+    #                  r'\TestTag5SecondsInDay.HST')
+    inputFile = Path('C:/Users/jaun.vanheerden/PycharmProjects/HST/resources/ST050/ST050PLC01P401asFrequency.HST')
 
     # create a blank HST_one object to set the drive prior to loading
     hst = HST()
@@ -196,7 +197,8 @@ if __name__ == '__main__':
     # repath to the following dir, this repath replaces the paths
     # within the HST_one
     #hst.repath = Path(r'C:\Users\jaun.vanheerden\PycharmProjects\HST\resources\converted\2-byte')
-    hst.repath = Path(r'C:\Users\jaun.vanheerden\PycharmProjects\HST\resources\CleanHistory\TestTags2Byte_A')
+    # hst.repath = Path(r'C:\Users\jaun.vanheerden\PycharmProjects\HST\resources\CleanHistory\TestTags2Byte_A')
+    hst.repath = Path('C:/Users/jaun.vanheerden/PycharmProjects/HST/resources/ST050')
 
     # load
     hst.load(inputFile)
